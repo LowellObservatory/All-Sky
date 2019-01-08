@@ -10,25 +10,25 @@ Replace the existing software with something new that is well documented and tes
       There seems to be a political problem with this.  Tentative answer is not to show DCT pointing.
 
 * Functional Requirements:
- A. Essential:
-  Takes images reliably at configurable cadence.  The FITS files are stored.
-  Image display required.
-  Movie animation display required.
-  Run all night without breaking or losing images on the longest night.
-  [Calibration done off-line]
- B. Requirements for observers and TOs:  
-  1. Where is the DCT pointing?
-  2. Equatorial and alt-az grids, and compass points (NSEW)
-  3. Star names
- C. Interaction or configuration: System
-      Cadence (within limits)
-      Upper limit to exposure time 
-      Lower limit to exposure time (likely to be system dependent)
-      Number of frames in the movie
- D. Interaction or configuration: User
-      Overlay selections (applies to still images and movies)
-      Inverted image
-      Make a movie of 10 frames.  The user gets to select whether the movie is
+  A. Essential:
+    1. Takes images reliably at configurable cadence.  The FITS files are stored.
+    2. Image display required.
+    3. Movie animation display required.
+    4. Run all night without breaking or losing images on the longest night.
+       [Calibration done off-line]
+  B. Requirements for observers and TOs:  
+    1. Where is the DCT pointing?
+    2. Equatorial and alt-az grids, and compass points (NSEW)
+    3. Star names
+  C. Interaction or configuration: System
+    1. Cadence (within limits)
+    2. Upper limit to exposure time 
+    3. Lower limit to exposure time (likely to be system dependent)
+    4. Number of frames in the movie
+  D. Interaction or configuration: User
+    1. Overlay selections (applies to still images and movies)
+    2. Inverted image
+    3. Make a movie of 10 frames.  The user gets to select whether the movie is
         made of every image, 10 in a row, every other image, every third one, etc.
   
 * Technical Requirements:
