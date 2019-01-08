@@ -3,11 +3,9 @@ All-sky camera
 Replace the existing software with something new that is well documented and tested and done through the full software development protocol.
 
 * Purpose:
-  See what the weather is doing.
-  
-  Where is the telescope pointing?  This impacts observing.
-  
-  User community: Control room, off-site, visitor center, public access for Bob Ayers.
+  - See what the weather is doing.
+  - Where is the telescope pointing?  This impacts observing.
+  - User community: Control room, off-site, visitor center, public access for Bob Ayers.
   
     Need policy decision about whether public images show DCT pointing position.
       There seems to be a political problem with this.
