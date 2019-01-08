@@ -45,4 +45,4 @@ Replace the existing software with something new that is well documented and tes
   
 Questions
 1. Is it possible to have the user control overlays at the browser end?  Is this even
-   desirable?  This is a research project.  Dyer will research this.
+   desirable?  This is a research project.  Dyer will research this. 
