@@ -39,7 +39,17 @@ Replace the existing software with something new that is well documented and tes
   4. Interaction/configuration mechanism
     a) Config file controlled by TO only, by some TBD means.
     b) A browser-side configuration that can be done independently.
-
+    
+* Admin-User Requirement:
+  1. Provide the tools needed to realign the overlay image(s) to the allsky image after
+     the camera has been moved and the orientation of the sky has changed.
+  2. One possible solution will be to produce an image where bright stars
+      can be selected via the mouse to very good accuracy. These pixel coordinates are
+      converted to sky coordinates and offsets are applied to the overlays so that they
+      align well with the sky image. 
+  3. The process of realigning the images when the sky orientation has changed must be
+     something anyone can do with adequate instruction.
+            
 * Possible extensions
   - Extinction map.
   
