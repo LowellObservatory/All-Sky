@@ -56,3 +56,17 @@ Replace the existing software with something new that is well documented and tes
 Questions
 1. Is it possible to have the user control overlays at the browser end?  Is this even
    desirable?  This is a research project.  Dyer will research this. 
+2. Night Summary Image.  The purpose of the night summary image is to provide a way for 
+   determining a night's sky conditions for historical purposes in a very fast way.
+   Suppose I am a student working for Michael Mommert on a project to provide weather and
+   sky conditions that can be interpreted by a script for the purpose of establishing a
+   threshold for opening/closing of a telescope.  I will want to use previous data in order
+   to test my algorithms and code.  Rather than having to look through an entire night's
+   data it will be preferable to look at a single image which shows the night's sky 
+   variability in a single glance. The night summary image provides this quick synopsis
+   of a night's sky conditions.
+   
+   
+   
+
+
