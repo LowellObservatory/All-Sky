@@ -28,12 +28,13 @@ All-sky camera
     1. Cadence (within limits)
     2. Upper limit to exposure time 
     3. Lower limit to exposure time (likely to be system dependent)
-    4. Number of frames in the movie
+    4. [Number of frames in the movie] Slated for deletion!
   * Interaction or configuration: User
-    1. Overlay selections (applies to still images and movies)
+    1. Overlay selections (applies to still images and [movies ?])
     2. Inverted image
-    3. Make a movie of 10 frames.  The user gets to select whether the movie is
-        made of every image, 10 in a row, every other image, every third one, etc.
+    3. [Make a movie of 10 frames.  The user gets to select whether the movie is
+        made of every image, 10 in a row, every other image, every third one, etc.]
+        Slated for deletion.
   
 * Technical Requirements:
   1. Make the camera interface software module so it can be replaced.
@@ -47,7 +48,7 @@ All-sky camera
      based on the current humidity measurement.
   6. Control of the camera will be done using availabe INDI drivers. The camera control
      portion of the software will be designed such that if and when the camera is replaced
-     with a different manufacture's camera very little will have to be changed with regard
+     with a different manufacturer's camera very little will have to be changed with regard
      to the camera control module.
   7. The overlay grids to be provided are,
      a) Equatorial grid
