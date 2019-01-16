@@ -17,7 +17,7 @@ All-sky camera
  * Essential:
     1. Takes images reliably at configurable cadence.  The FITS files are stored.
     2. Image display required.
-    3. Movie animation display required.
+    3. [Movie animation display required.] Slated for deletion.
     4. Run all night without breaking or losing images on the longest night.
        [Calibration done off-line]
   * Requirements for observers and TOs:  
