@@ -1,6 +1,10 @@
 All-sky camera
 
-Replace the existing software with something new that is well documented and tested and done through the full software development protocol.
+* Scope:
+    1. This project will provide software that will operate the allsky camera in a mostly autonomous manner, save the
+       raw images and provide the overlay images which correspond in time with the sky images.
+    2. Replace the existing software with something new that is well documented and tested and done through the full software
+       development protocol.
 
 * Purpose:
   - See what the weather is doing.
@@ -39,6 +43,21 @@ Replace the existing software with something new that is well documented and tes
   4. Interaction/configuration mechanism
     a) Config file controlled by TO only, by some TBD means.
     b) A browser-side configuration that can be done independently.
+  5. Control the dew heater. Control the camera's built-in dew heater with a PDU
+     based on the current humidity measurement.
+  6. Control of the camera will be done using availabe INDI drivers. The camera control
+     portion of the software will be designed such that if and when the camera is replaced
+     with a different manufacture's camera very little will have to be changed with regard
+     to the camera control module.
+  7. The overlay grids to be provided are,
+     a) Equatorial grid
+     b) Alt/Az grid
+     c) Star labels
+     d) Moon and planets
+     e) Current telescope position.
+     f) Of the overlay grids to be provided only 1, item e) Telescope Position, must be 
+        calculated in real time. Item d) Moon and Planets should probably also be calculated
+        in real time but they could be saved during the day before the observing night.
     
 * Admin-User Requirement:
   1. Provide the tools needed to realign the overlay image(s) to the allsky image after
@@ -65,7 +84,8 @@ Questions
    data it will be preferable to look at a single image which shows the night's sky 
    variability in a single glance. The night summary image provides this quick synopsis
    of a night's sky conditions.
-   
+  
+  The below figure will be modified and replaced soon.
   ![alt text](https://github.com/LowellObservatory/All-Sky/blob/master/asc_flowch_001.png)
    
 
