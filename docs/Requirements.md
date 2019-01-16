@@ -66,7 +66,7 @@ Questions
    variability in a single glance. The night summary image provides this quick synopsis
    of a night's sky conditions.
    
-   
+  ![alt text](https://github.com/LowellObservatory/All-Sky/blob/master/asc_flowch_001.png)
    
 
 
