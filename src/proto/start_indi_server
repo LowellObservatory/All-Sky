@@ -1,0 +1,7 @@
+#!/usr/bin/sh
+
+mkfifo /tmp/indififo
+
+indiserver -v -p 7624 -m 100 -f /tmp/indififo indi_sx_ccd
+
+

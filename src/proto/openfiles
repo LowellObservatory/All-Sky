@@ -1,0 +1,37 @@
+#!/usr/bin/sh
+
+pid=`pgrep -alf cmd_sx`
+
+lsof -p $pid | grep STREAM
+lsof -p $pid | grep STREAM | wc -l
+
+# lsof | head
+
+# /etc/security/limits.conf
+# *     hard  nofile   50000
+#*      soft  nofile   50000
+#root   hard  nofile   50000
+#root   soft  nofile   50000
+
+# /etc/sysctl.conf
+# fs.file-max = 2097152
+# systcl -p
+
+# cat /proc/sys/fs/file-max
+# ulimit -Hn
+# ulimit -Sn
+
+# as root
+# su - sel -c 'ulimit -aHS' -s '/bin/bash'
+
+# XXX == pid
+# cat /proc/XXX/limits
+
+# lsof column fields
+
+# COMMAND PID TID TASKCMD USER FD TYPE DEVICE  SIZE/OFF NODE NAME
+
+# ERROR TWO:
+# *** buffer overflow detected ***: /home/sel/anaconda3/bin/python terminated
+# Aborted (core dumped)
+
