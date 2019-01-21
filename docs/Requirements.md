@@ -4,7 +4,7 @@ All-sky camera
     1. This project will provide software that will operate the allsky camera in a mostly autonomous manner, save the
        raw images and provide the overlay images which correspond in time with the sky images.
     2. Replace the existing software with something new that is well documented and tested and done through the full software development protocol.
-    3. This project does not include any type of image display or user accessability. 
+    3. This project does not include any type of image display or user accessibility. However, as with good software         deployment the code must be modular enough to accomadate the inclusion of those items deemed outside of the scope of this project. 
 
 * Purpose:
   - See what the weather is doing.
@@ -12,6 +12,7 @@ All-sky camera
   - User community: Control room, off-site, visitor center, public access for Bob Ayers.  `Outside of scope?`
   - Need policy decision about whether public images show DCT pointing position. 
       There seems to be a political problem with this.  Tentative answer is not to show DCT pointing.  `Outside of scope?`
+  - To provide allsky camera data for purposes determined by the project sponsor.
 
 * Functional Requirements:
  * Essential:
