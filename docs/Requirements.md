@@ -1,4 +1,4 @@
-All-sky camera
+All-Sky Camera
 
 * Scope:
     1. This project will provide software that will operate the allsky camera in a mostly autonomous manner, save the
