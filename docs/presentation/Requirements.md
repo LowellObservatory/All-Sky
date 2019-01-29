@@ -1,14 +1,36 @@
-All-Sky Camera Presention portion of this project
-
-`Place those items from the original project requirments document that are appropriate for the "presentation" portion of this project.`
+All-Sky Camera Presention 
 
 * Scope:
-
+  1. Replace the existing software with something new that is well documented and tested and done through the full software development protocol.
 
 * Purpose:
+  - See what the weather is doing.
+  - Where is the telescope pointing?  This impacts observing.
+  - User community: Control room, off-site, visitor center, public access for Bob Ayers. 
+  - Need policy decision about whether public images show DCT pointing position. 
+      There seems to be a political problem with this.  Tentative answer is not to show DCT pointing. 
+  - To provide allsky camera data for purposes determined by the project sponsor.
 
 
-* Fundamental Requirements:
-
+* Functional Requirements:
+ * Essential:
+    1. Image display required. 
+    2. Movie animation display required.
+    3. Run all night without breaking or losing images on the longest night.
+  * Requirements for observers and TOs:  
+    1. Where is the DCT pointing? 
+    2. Equatorial and alt-az grids, and compass points (NSEW)
+    3. Star name labels
+  * Interaction or configuration: System
+    1. Cadence (within limits) 
+    2. Upper limit to exposure time 
+    3. Lower limit to exposure time (likely to be system dependent)
+    4. Number of frames in the movie. 
+  * Interaction or configuration: User
+    1. Overlay selections (applies to still images and movies)
+    2. Inverted image 
+    3. Make a movie of 10 frames.  The user gets to select whether the movie is
+        made of every image, 10 in a row, every other image, every third one, etc.
+        
 * Technical Requirments:
 
