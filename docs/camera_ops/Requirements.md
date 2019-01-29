@@ -4,7 +4,7 @@ All-Sky Camera Operations
 2. Create the necessary software interfaces required to satisfy the presentation aspect of this project.
 
 * Purpose
-- Make raw FITS images available to the Presentation software
+    - Make raw FITS images available to the Presentation software
 
 * Fundamental Requirements
 1. Provide a method for automatically starting the camera exposure sequence based on the sun angle.
