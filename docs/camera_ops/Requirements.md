@@ -2,7 +2,8 @@ All-Sky Camera Operations
 * Scope
 1. This portion of the project is concerned with the operating the camera
 2. Create the necessary software interfaces required to satisfy the presentation aspect of this project.
-
+3. There will be no direct interaction with the acquisition portion of the software except for those items
+provided via a configuration file or by some other indirect method.
 
 * Purpose
     - Make raw FITS images available to the Presentation software
