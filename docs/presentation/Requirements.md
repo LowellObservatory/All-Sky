@@ -39,7 +39,7 @@ All-Sky Camera Presention
   3. Interaction/configuration mechanism 
     a) Config file controlled by TO only, by some TBD means. 
     b) A browser-side configuration that can be done independently. 
-  4. The overlay grids to be provided are,  `Outside of scope?`
+  4. The overlay grids to be provided are, 
      a) Equatorial grid
      b) Alt/Az grid
      c) Star labels
@@ -47,4 +47,14 @@ All-Sky Camera Presention
      e) Current telescope position.
      f) Of the overlay grids to be provided only 1, item e) Telescope Position, must be 
         calculated in real time. Item d) Moon and Planets should probably also be calculated
-        in real time but they could be saved during the day before the observing night.
+        in real time but they could be saved during the day before the observing night.        
+  5. Provide the tools needed to realign the overlay image(s) to the allsky image after
+     the camera has been moved and the orientation of the sky has changed.
+  6. One possible solution will be to produce an image where bright stars
+      can be selected via the mouse to very good accuracy. These pixel coordinates are
+      converted to sky coordinates and offsets are applied to the overlays so that they
+      align well with the sky image. 
+  7. The process of realigning the images when the sky orientation has changed must be
+     something anyone can do with adequate instruction.
+     
+     
