@@ -3,14 +3,17 @@ All-Sky Camera Operations
 1. This portion of the project is concerned with the operating the camera
 2. Create the necessary software interfaces required to satisfy the presentation aspect of this project.
 
+
 * Purpose
     - Make raw FITS images available to the Presentation software
+
 
 * Fundamental Requirements
 1. Provide a method for automatically starting the camera exposure sequence based on the sun angle.
 2. Develop an algorithm to increase/decrease exposure times based on the sun angle and sky brightness to include
 the moon's contribution to the sky background.
 3. Acquire and store raw FITS images
+
 
 * Technical Requirements
 1. Camera operation requires interaction by TOs? ?????????
