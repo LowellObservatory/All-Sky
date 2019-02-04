@@ -33,7 +33,7 @@ the moon's contribution to the sky background.
     
 
 * Questions
-    1. Does the allsky camera make complete use of the INDI protocol or does in only use the camera driver/server portion available with use of INDI?
+    1. Does the allsky camera make complete use of the INDI protocol or does it only use the camera driver/server portion available with use of INDI?
     2. Will the ASC write its own FITS headers or will it use LOFITS to write the headers?
     3. Shall the image acquisition "pipeline" be strictly synchronous or can it be done asyncronously? How does one keep track of when a file is open for reading/writing by some other portion of the processing pipeline? Is this a question better suited for the Presentation portion of this project?
     
