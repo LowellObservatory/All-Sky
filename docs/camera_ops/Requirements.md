@@ -24,7 +24,7 @@ the moon's contribution to the sky background.
     4. Modularize the camera interface such that it can easily be adapted if the camera changes.
     5. Provide a "user interface" that allows TOs to start the camera if it has stopped taking images. The same user interface should provide a "staleness" status so that operators know whether the camera has stopped taking images.
     
-    Possible "mini-ui" for TOs to monitor and control the allsky cameara:
+    Possible "mini-ui" for TOs to monitor and control the allsky camera:
     
     ![alt text](https://github.com/LowellObservatory/All-Sky/blob/master/asc_mini_ui.png)
     
