@@ -15,6 +15,7 @@ provided via a configuration file or by some other indirect method.
 the moon's contribution to the sky background.  
     3. Acquire and store raw FITS images
     4. Retrieve humidity and temperature information for activemq in a strictly consumer/listener capacity.
+    5. The software must adhere to good object oriented practices and procedures to assure modularity and extensibility.
 
 
 * Technical Requirements
