@@ -1,3 +1,5 @@
+This document is now superceded by the requirements documents found under /camera_stuff and /presentation
+
 All-Sky Camera
 
 * Scope:
