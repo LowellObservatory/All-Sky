@@ -20,7 +20,7 @@ the moon's contribution to the sky background.
 
 * Technical Requirements
     1. Camera operation requires interaction by TOs? Yes. Seen #5 below.
-    2. A user configurable "config" file is to be made available to TOs at DCT. (Need more specificity for this)
+    2. A user configurable "config" file is to be made available to TOs at DCT. `(Need more specificity for this)`
     3. Make use of INDI camera driver to operate the allsky camera.
     4. Modularize the camera interface such that it can easily be adapted if the camera changes.
     5. Provide a "user interface" that allows TOs to start the camera if it has stopped taking images. The same user interface should provide a "staleness" status so that operators know whether the camera has stopped taking images.
