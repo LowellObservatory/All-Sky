@@ -1,4 +1,4 @@
-This document is now superceded by the requirements documents found under /camera_stuff and /presentation
+This document is now superceded by the requirements documents found under /camera_ops and /presentation
 
 All-Sky Camera
 
