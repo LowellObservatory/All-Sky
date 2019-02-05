@@ -30,6 +30,27 @@ the moon's contribution to the sky background.
     ![alt text](https://github.com/LowellObservatory/All-Sky/blob/master/asc_mini_ui.png)
     
     6. Write FITS headers in either a stand alone mode or by using LOFITS to write the headers. (TBD)
+    6a. Which keywords should be in the file header?
+    6b. Suggested keywords
+        1. Temperature
+        2. Relative humidity
+        3. LST time at exposure start
+        4. Sun angle
+        5. Moon angle
+        6. Moon % illum
+        7. bzero
+        8. datamin
+        9. datamax
+        10. Observatory location
+        11. Obs latitude
+        12. Obs longitude
+        13. Obs altitude
+        14. Instrument name = "DCT ALLSKY"
+        15. Sequence number
+
+    7. File naming. Suggested file naming 'UTdate'_sequence number.fits
+        Example: 20190205_0001.fits
+      
     
 
 * Questions
