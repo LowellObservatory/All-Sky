@@ -29,7 +29,7 @@ the moon's contribution to the sky background.
     
     ![alt text](https://github.com/LowellObservatory/All-Sky/blob/master/asc_mini_ui.png)
     
-    6. Write FITS headers in either a stand alone mode or by using LOFITS to write the headers. (TBD)
+    6. Write FITS headers in either a stand alone mode or by using LOFITS to write the headers. (TBD)\
     6a. Which keywords should be in the file header?
     6b. Suggested keywords
         1. Temperature
