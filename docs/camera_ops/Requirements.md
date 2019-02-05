@@ -48,7 +48,7 @@ the moon's contribution to the sky background.
         14. Instrument name = "DCT ALLSKY"
         15. Sequence number
 
-    7. File naming. Suggested file naming 'UTdate'_sequence number.fits
+    7. File naming. Suggested file naming 'UTdate'_sequence number.fits\
        Example: 20190205_0001.fits
       
     
