@@ -49,6 +49,7 @@ the moon's contribution to the sky background.
         15. Sequence number
 
     7. File naming. Suggested file naming 'UTdate'_sequence number.fits
+    
         Example: 20190205_0001.fits
       
     
