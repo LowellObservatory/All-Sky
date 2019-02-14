@@ -50,7 +50,7 @@ the moon's contribution to the sky background.
  The following shows the FITS head of the existing All-sky camera at DCT:
  ![alt_text](https://github.com/LowellObservatory/All-Sky/blob/master/header.png)
  
- * Technical requirements (continued)
+* Technical Requirements (continued)
     7. File naming. Suggested file naming 'UTdate'_sequence number.fits\
        Example: 20190205_0001.fits
     8. Provide a configuration file from which several parameters may be edited.  Possible items to include in the
