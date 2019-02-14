@@ -30,7 +30,7 @@ the moon's contribution to the sky background.
     ![alt text](https://github.com/LowellObservatory/All-Sky/blob/master/asc_mini_ui.png)
     
     6. Write FITS headers in either a stand alone mode or by using LOFITS to write the headers. (TBD) Which keywords should be in the file header?\
-     Suggested keywords:                                                                                                                       
+    Suggested keywords:                                                                                                                       
         1. Temperature
         2. Relative humidity
         3. LST time at exposure start
@@ -52,9 +52,9 @@ the moon's contribution to the sky background.
  
 * Technical Requirements (continued)                                    
     7. File naming. Suggested file naming 'UTdate'_sequence number.fits\
-       Example: 20190205_0001.fits                                        
+       Example: 20190205_0001.fits                                             
     8. Provide a configuration file from which several parameters may be edited.  Possible items to include in the
-    configuration file are as follows: \
+    configuration file are as follows: \    
           1. Default cadence    
           2. Default sun angle for start and end of a nightly sequence.    
           3. Binning mode.    
