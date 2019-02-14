@@ -55,7 +55,7 @@ the moon's contribution to the sky background.
        Example: 20190205_0001.fits                                             
     8. Provide a configuration file from which several parameters may be edited.  Possible items to include in the
     configuration file are as follows:                                        
-              1. Default cadence    
+       &nbsp; &nbsp; &nbsp; &nbsp; 1. Default cadence    
               2. Default sun angle for start and end of a nightly sequence.    
               3. Binning mode.    
               4. Exposure min and max times.    
