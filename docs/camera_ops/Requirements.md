@@ -46,10 +46,11 @@ the moon's contribution to the sky background.
         13. Obs altitude
         14. Instrument name = "DCT ALLSKY"
         15. Sequence number
-     Test table:
-      | Left-aligned | Center-aligned | Right-aligned            |
-      | Keyword      | Value          | Comments                 |
-      | Simple =     |             T/ | Standard conforming file |
+        
+ 
+ | Left-aligned | Center-aligned | Right-aligned            |
+ | Keyword      | Value          | Comments                 |
+ | Simple =     |             T/ | Standard conforming file |
       
 
     7. File naming. Suggested file naming 'UTdate'_sequence number.fits\
