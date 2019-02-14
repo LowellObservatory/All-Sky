@@ -48,9 +48,7 @@ the moon's contribution to the sky background.
         15. Sequence number
         
  
- | Left-aligned | Center-aligned | Right-aligned            |\
- | Keyword      | Value          | Comments                 |\
- | Simple =     |             T/ | Standard conforming file |\
+
  
       
 
