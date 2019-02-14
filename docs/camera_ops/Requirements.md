@@ -56,9 +56,9 @@ the moon's contribution to the sky background.
     8. Provide a configuration file from which several parameters may be edited.  Possible items to include in the
     configuration file are as follows:                                        
        &nbsp; &nbsp; &nbsp; &nbsp; 1. Default cadence    
-              2. Default sun angle for start and end of a nightly sequence.    
-              3. Binning mode.    
-              4. Exposure min and max times.    
+       &nbsp; &nbsp; &nbsp; &nbsp; 2. Default sun angle for start and end of a nightly sequence.    
+       &nbsp; &nbsp; &nbsp; &nbsp; 3. Binning mode.    
+       &nbsp; &nbsp; &nbsp; &nbsp; 4. Exposure min and max times.    
       
 * Questions
     1. Does the allsky camera make complete use of the INDI protocol or does it only use the camera driver/server portion available with use of INDI?
