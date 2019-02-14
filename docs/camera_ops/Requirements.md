@@ -54,7 +54,7 @@ the moon's contribution to the sky background.
     7. File naming. Suggested file naming 'UTdate'_sequence number.fits\
        Example: 20190205_0001.fits                                        
     8. Provide a configuration file from which several parameters may be edited.  Possible items to include in the
-    configuration file are as follows:
+    configuration file are as follows: \
         1. Default cadence
         2. Default sun angle for start and end of a nightly sequence.
         3. Binning mode.
