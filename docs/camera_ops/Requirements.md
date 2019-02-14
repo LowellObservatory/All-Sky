@@ -49,13 +49,10 @@ the moon's contribution to the sky background.
         
  The following shows the FITS head of the existing All-sky camera at DCT:
  ![alt_text](https://github.com/LowellObservatory/All-Sky/blob/master/header.png)
-
  
-      
-
+ * Technical requirements (continued)
     7. File naming. Suggested file naming 'UTdate'_sequence number.fits\
        Example: 20190205_0001.fits
-       
     8. Provide a configuration file from which several parameters may be edited.  Possible items to include in the
     configuration file are as follows:
         1. Default cadence
@@ -63,11 +60,8 @@ the moon's contribution to the sky background.
         3. Binning mode.
         4. Exposure min and max times.
       
-    
-
 * Questions
     1. Does the allsky camera make complete use of the INDI protocol or does it only use the camera driver/server portion available with use of INDI?
     2. Will the ASC write its own FITS headers or will it use LOFITS to write the headers?
-    3. Shall the image acquisition "pipeline" be strictly synchronous or can it be done asyncronously? How does one keep track of when a file is open for reading/writing by some other portion of the processing pipeline? Is this a question better suited for the Presentation portion of this project?
-    4. Will the acquisition cadence always remain strictly 60 seconds between images?
+    
     
