@@ -46,6 +46,7 @@ the moon's contribution to the sky background.
         13. Obs altitude
         14. Instrument name = "DCT ALLSKY"
         15. Sequence number
+        16. Firmware version, when applicable
         
  The following shows the FITS head of the existing All-sky camera at DCT:
  ![alt_text](https://github.com/LowellObservatory/All-Sky/blob/master/header.png)
