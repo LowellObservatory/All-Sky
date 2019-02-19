@@ -51,7 +51,8 @@ the moon's contribution to the sky background.
         
         
         
- The following shows the FITS head of the existing All-sky camera at DCT:
+        
+ The following shows the FITS header of the existing All-sky camera at DCT:
  ![alt_text](https://github.com/LowellObservatory/All-Sky/blob/master/header.png)
  
 * Technical Requirements (continued)                                    
