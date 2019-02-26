@@ -59,7 +59,7 @@ the moon's contribution to the sky background.
  
  The proposed FITS header composed by the ASC software initially, then by LOFITS eventually:
  
- ![alt_text](https://github.com/LowellObservatory/All-Sky/blob/master/prophdr.png)
+ ![alt_text](https://github.com/LowellObservatory/All-Sky/blob/master/prophdr.png)\
 Note: All angles, timings, etc., are derived and calculated from the exposure start time taken from the original FITS header.
  
 * Technical Requirements (continued)                                    
