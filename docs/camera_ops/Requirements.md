@@ -64,8 +64,10 @@ Note: All angles, timings, etc., are derived and calculated from the exposure st
  
 * Technical Requirements (continued)                                    
     7. File naming. Suggested file naming 'UTdate'_sequence number.fits\
-       Example: 20190205_0001.fits                                             
-    8. Provide a configuration file from which several parameters may be edited.  Possible items to include in the
+       Example: 20190205_0001.fits
+    8. Include in a separate configuration file a list of the header keywords.
+    9. Provide a method to easily add new FITS keywords. The class or method(s) used to populate the FITS header must be adaptable in order to allow new keywords and associated values.
+    10. Provide a configuration file from which several parameters may be edited.  Possible items to include in the
     configuration file are as follows:                                        
        &nbsp; &nbsp; &nbsp; &nbsp; - Default cadence    
        &nbsp; &nbsp; &nbsp; &nbsp; - Default sun angle for start and end of a nightly sequence.    
@@ -73,9 +75,8 @@ Note: All angles, timings, etc., are derived and calculated from the exposure st
        &nbsp; &nbsp; &nbsp; &nbsp; - Exposure min and max times.   
        &nbsp; &nbsp; &nbsp; &nbsp; - Camera handle, identifier or driver name needed by the software to identify the specific
                                      camera make and model.
-*                                                                         
-    9. Include in a separate configuration file a list of the header keywords.
-    10. Provide a method to easily add new FITS keywords. The class or method(s) used to populate the FITS header must be adaptable in order to allow new keywords and associated values.
+                                                                         
+
       
 
     
