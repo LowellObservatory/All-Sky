@@ -58,6 +58,9 @@ the moon's contribution to the sky background.
  The FITS header as written by INDI:
  ![alt_text](https://github.com/LowellObservatory/All-Sky/blob/master/indihdr.png)
  
+ The proposed FITS header composed by the ASC software initially, then by LOFITS eventually:
+ 
+ ![alt_text](https://github.com/LowellObservatory/All-Sky/blob/master/prophdr.png)
  
  
 * Technical Requirements (continued)                                    
