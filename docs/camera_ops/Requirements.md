@@ -74,8 +74,8 @@ Note: All angles, timings, etc., are derived and calculated from the exposure st
        &nbsp; &nbsp; &nbsp; &nbsp; 5. Camera handle, identifier or driver name needed by the software to identify the specific
                                       camera make and model.\
                                       
-   9. Include in a separate configuration file a list of the header keywords.\
-   10. Provide a method to easily add new FITS keywords. The class or method(s) used to populate the FITS header must be adaptable in order to allow new keywords and associated values.
+  9. Include in a separate configuration file a list of the header keywords.\
+  10. Provide a method to easily add new FITS keywords. The class or method(s) used to populate the FITS header must be adaptable in order to allow new keywords and associated values.
       
 
     
