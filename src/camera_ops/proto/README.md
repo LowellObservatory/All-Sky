@@ -1,3 +1,8 @@
+Update 12 March 2019
+The files that were referenced below have been replaced with prototype code that is more focused on the purposes intended for this project.
+
+===============================================================================================================================
+
 The current state of the prototype code as of 19 February 2019.
 
 This program requires the installation of the pyindi-client available for Linux at https://pypi.org/project/pyindi-client/.
