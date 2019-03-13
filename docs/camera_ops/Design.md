@@ -6,5 +6,5 @@ Design Considerations
     
 Initial design flow chart document (13 March 2019)
 
-![alt text] ("https://github.com/LowellObservatory/All-Sky/blob/master/docs/allsky_design_chart.pdf")
+![embed] ("https://github.com/LowellObservatory/All-Sky/blob/master/docs/allsky_design_chart.pdf")[/embed]
 
