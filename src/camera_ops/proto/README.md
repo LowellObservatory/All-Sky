@@ -1,14 +1,14 @@
-Update 12 March 2019
-The files that were referenced below have been replaced with prototype code that is more focused on the purposes intended for this project.
+Update 12 March 2019\
+The files that were referenced below have been replaced with prototype code that is more focused on the purposes intended for this project.\
 
-The file "data_capture.py" will operate the camera once the indi server is started. This script requires 4 arguments.
-Argument 1 is the frame type which consists of 1 of 4: Light, Bias, Dark or Flat.
-Argument 2 is an integer, nexp, which sets the number of exposures for a series of images
-Argument 3 is a float, exptime, which sets the exposure time
+The file "data_capture.py" will operate the camera once the indi server is started. This script requires 4 arguments.\
+Argument 1 is the frame type which consists of 1 of 4: Light, Bias, Dark or Flat.\
+Argument 2 is an integer, nexp, which sets the number of exposures for a series of images\
+Argument 3 is a float, exptime, which sets the exposure time\
 Argument 4 is a float, delay, which is the delay time between successive frames. It is recommended that a minimum delay time
-of 1 second be applied between frames.
+of 1 second be applied between frames.\
 
-data_capture.py imports set_frame_type which is needed to set the data frame type
+data_capture.py imports set_frame_type which is needed to set the data frame type\
 set_frame_type.py imports pyindilib which is a generic client initialization class. Greater use of this class will be expanded
 upon during future development.
 
