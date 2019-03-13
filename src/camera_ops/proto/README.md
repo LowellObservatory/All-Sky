@@ -1,4 +1,4 @@
-Update 12 March 2019\
+Update 12 March 2019
 
 The file "data_capture.py" will operate the camera once the indi server is started. This script requires 4 arguments.\
 Argument 1 is the frame type which consists of 1 of 4: Light, Bias, Dark or Flat.\
