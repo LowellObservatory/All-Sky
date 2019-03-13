@@ -1,5 +1,4 @@
 Update 12 March 2019\
-The files that were referenced below have been replaced with prototype code that is more focused on the purposes intended for this project.
 
 The file "data_capture.py" will operate the camera once the indi server is started. This script requires 4 arguments.\
 Argument 1 is the frame type which consists of 1 of 4: Light, Bias, Dark or Flat.\
@@ -12,6 +11,7 @@ data_capture.py imports set_frame_type which is needed to set the data frame typ
 set_frame_type.py imports pyindilib which is a generic client initialization class. Greater use of this class will be expanded
 upon during future development.
 
+The files that were referenced below have been replaced with prototype code that is more focused on the purposes intended for this project.
 =================================================================================
 
 The current state of the prototype code as of 19 February 2019.
