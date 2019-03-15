@@ -1,0 +1,5 @@
+
+{
+   "camera": {"camid": "SX CCD SuperStar", "locname": "Happy Jack", "path": ["local", "remote"], "pathno": [0, 1]},
+   "locgeo": {"lat": "34.7443", "lon": "-111.4223", "elev": "2361"}
+}
