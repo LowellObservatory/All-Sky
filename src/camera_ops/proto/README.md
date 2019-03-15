@@ -1,3 +1,8 @@
+Update 14 March 2019
+
+Uploaded the files config.json, config_parse.py, get_number_property.py, get_switch_property.py and INDI_properties.txt into the proto/ proto code directory.
+
+-----------------------------------
 Update 12 March 2019
 
 The file "data_capture.py" will operate the camera once the indi server is started. This script requires 4 arguments.\
