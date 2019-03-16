@@ -10,7 +10,7 @@ Argument 1 is the frame type which consists of 1 of 4: Light, Bias, Dark or Flat
 Argument 2 is an integer, nexp, which sets the number of exposures for a series of images\
 Argument 3 is a float, exptime, which sets the exposure time\
 Argument 4 is a float, delay, which is the delay time between successive frames. It is recommended that a minimum delay time
-of 1 second be applied between frames.
+of 15 seconds be applied between bias frames so that the A/D converter does not heat up.
 
 data_capture.py imports set_frame_type which is needed to set the data frame type\
 set_frame_type.py imports pyindilib which is a generic client initialization class. Greater use of this class will be expanded
