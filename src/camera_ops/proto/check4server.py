@@ -2,7 +2,6 @@
 
 from subprocess import Popen, PIPE
 from datetime import datetime
-import sys
 import os
 
 utdate = datetime.utcnow().strftime('%Y%m%d')
