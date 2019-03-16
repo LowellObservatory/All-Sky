@@ -98,8 +98,6 @@ class IndiClient(PyIndi.BaseClient):
             time.sleep(0.5)
             self.ccd_exposure = self.device_ccd.getNumber("CCD_EXPOSURE")
 
-        # we should inform the indi server that we want to receive the
-        # "CCD1" blob from this device
         indiclient.setBLOBMode(PyIndi.B_ALSO, self.ccd, "CCD1")
         ccd_ccd1 = self.device_ccd.getBLOB("CCD1")
 
@@ -107,11 +105,8 @@ class IndiClient(PyIndi.BaseClient):
             time.sleep(0.5)
             ccd_ccd1 = self.device_ccd.getBLOB("CCD1")
 
-        # a list of our exposure times
         exposures = [exptime] * nexp
  
-        # we use here the threading.Event facility of Python
-        # we define an event for newBlob event
         i = 0
         self.blobEvent = threading.Event()
         self.blobEvent.clear()

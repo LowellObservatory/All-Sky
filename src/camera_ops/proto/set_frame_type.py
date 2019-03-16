@@ -2,14 +2,16 @@
 
 from pyindilib import IndiClient
 import PyIndi
+import sys
+
 
 class FrameType():
     def __init__(self):
         pass
 
     def send_new_frame_type(self, newswitch):
-        ccd_connect = ic.device_ccd.getProperty("CCD_FRAME_TYPE")
-        switch = ccd_connect.getSwitch()
+        ccd_frame_type = ic.device_ccd.getProperty("CCD_FRAME_TYPE")
+        switch = ccd_frame_type.getSwitch()
 
         if newswitch == 'Light':
             switch[0].s = PyIndi.ISS_ON
@@ -38,3 +40,5 @@ class FrameType():
 ft = FrameType() 
 ic = IndiClient()
 
+newswitch = sys.argv[1]
+ft.send_new_frame_type(newswitch)

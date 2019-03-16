@@ -4,11 +4,12 @@ from pyindilib import IndiClient
 import PyIndi
 import sys
 
-class FrameType():
+
+class NumberProp():
     def __init__(self):
         pass
 
-    def send_new_frame_type(self, prop_val):
+    def get_number(self, prop_val):
         getnum = ic.device_ccd.getProperty(prop_val)
         number = getnum.getNumber()
 
@@ -20,8 +21,8 @@ class FrameType():
             print(i.name, i.value)
               
 
-ft = FrameType() 
+np = NumberProp()
 ic = IndiClient()
 
 prop_val = sys.argv[1]
-ft.send_new_frame_type(prop_val)
+np.get_number(prop_val)

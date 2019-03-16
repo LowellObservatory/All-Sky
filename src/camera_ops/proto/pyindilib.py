@@ -1,20 +1,30 @@
 import PyIndi
 import time
 import sys
+import os
+from subprocess import Popen, PIPE
+
 
 class IndiClient(PyIndi.BaseClient):
     def __init__(self):
         super(IndiClient, self).__init__()
         self.setServer("localhost", 7624)
+        self.device = ''
 
-        if (not(self.connectServer())):
-            print("No indiserver running on " + self.getHost() + ":" + str(self.getPort()) + " - Try to run")
-            sys.exit(1)
+        if not self.connectServer():
+            print("No indiserver running on " + self.getHost() + ":" + str(self.getPort()))
+            try:
+                os.mkfifo('/tmp/indififo')
+                Popen(['/bin/sh', '-c', '/usr/bin/indiserver -f /tmp/indififo indi_sx_ccd'], stdout=PIPE)
+            except FileExistsError:
+                Popen(['/bin/sh', '-c', '/usr/bin/indiserver -f /tmp/indififo indi_sx_ccd'], stdout=PIPE)
+            except OSError:
+                Popen(['/bin/sh', '-c', '/usr/bin/indiserver indi_sx_ccd'], stdout=PIPE)
 
         ccd = "SX CCD SuperStar"
         self.device_ccd = self.getDevice(ccd)
 
-        while not(self.device_ccd):
+        while not self.device_ccd:
             time.sleep(0.5)
             self.device_ccd = self.getDevice(ccd)
 
@@ -51,4 +61,3 @@ class IndiClient(PyIndi.BaseClient):
 
     def serverDisconnected(self, code):
         pass
-

@@ -4,11 +4,12 @@ from pyindilib import IndiClient
 import PyIndi
 import sys
 
-class FrameType():
+
+class SwitchProp():
     def __init__(self):
         pass
 
-    def send_new_frame_type(self, prop_val):
+    def get_switch(self, prop_val):
         prop_val = ic.device_ccd.getProperty(prop_val)
 
         switch = prop_val.getSwitch()
@@ -28,10 +29,9 @@ class FrameType():
         except (IndexError):
             print('Maybe not a switch variable?')
 
-              
 
-ft = FrameType() 
+sp = SwitchProp()
 ic = IndiClient()
 
 prop_val = sys.argv[1]
-ft.send_new_frame_type(prop_val)
+gs.get_switch(prop_val)
