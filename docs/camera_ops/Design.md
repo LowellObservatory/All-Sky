@@ -8,3 +8,6 @@ Initial design flow chart document (13 March 2019)
 
 ![alt text](https://github.com/LowellObservatory/All-Sky/blob/master/docs/allsky_design_chart.png)
 
+   3. Add "logger" class
+   4. Add dew heater class. Requires import of dlipower module.
+   
