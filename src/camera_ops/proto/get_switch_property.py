@@ -1,4 +1,3 @@
-#!/home/sel/anaconda3/bin/python
 
 from pyindilib import IndiClient
 import PyIndi
@@ -18,22 +17,6 @@ class SwitchProp():
             print('Probably not a switch property', e)
             sys.exit()
      
-        """
-        try:
-            if switch[0].s == 1:
-                print(switch[0].name)
-            elif switch[1].s == 1:
-                print(switch[1].name)
-            elif switch[2].s == 1:
-                print(switch[2].name)
-            #elif switch[3].s == 1:
-            #    print('4')
-            #    print(switch[3].name)
-        except (IndexError, TypeError) as e:
-            print('Maybe not a switch property', e)
-        
-        # print(dir(switch))
-        """ 
        
         try:
             for i in range(0, switch.nsp):
