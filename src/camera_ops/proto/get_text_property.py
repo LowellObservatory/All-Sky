@@ -12,7 +12,7 @@ class NumberProp():
     def get_number(self, prop_val):
         getnum = ic.device_ccd.getProperty(prop_val)
         try:
-            number = getnum.getNumber()
+            number = getnum.getText()
         except AttributeError as e:
             print('The driver does not support this feature')
             print(str(e))
@@ -23,7 +23,7 @@ class NumberProp():
             sys.exit()
 
         for i in number:
-            print(i.name, i.value)
+            print(i.name, i.text)   
               
 
 np = NumberProp()
