@@ -1,6 +1,6 @@
 
 from time import sleep
-import xml.etree.ElementTree as et
+import xml.etree.ElementTree as ET
 import stomp
 from stomp.listener import ConnectionListener
 from pathlib import Path
@@ -12,20 +12,26 @@ Prototype of the tcs listener
 for proto_LOFITS
 """
 
-def parse_xml(body):
-    try:
-        # For testing, if reading from a file
-        # tree = et.parse(basedir + 'log.txt')
-        # root = tree.getroot()
-        # If reading from message broker use et.fromstring()
-        root = et.fromstring(body)
-        for child in root:
+
+class ParseTCS:
+    def __init__(self):
+        self.root = ''
+
+    def parse_xml(self, body):
+    # def parse_xml(self):
+        try:
+            # For testing, if reading from a file
+            # tree = ET.parse(basedir + 'log.txt')
+            # root = tree.getroot()
+            # If reading from message broker use ET.fromstring()
+            root = ET.fromstring(body)
+
             decd, decm, decs, decss = int(root[11][3][0][0].text), int(root[11][3][0][1].text), \
                 int(root[11][3][0][2].text.split('.')[0]), int(root[11][3][0][2].text.split('.')[1])
 
             rah, ram, ras, rass = int(root[11][3][4][0].text), int(root[11][3][4][1].text), \
                 int(root[11][3][4][2].text.split('.')[0]), int(root[11][3][4][2].text.split('.')[1])
-
+            
             '''
             lsth = root[9][0][0].text, lstm = root[9][0][1].text, lsts = root[9][0][2].text
             utc = root[9][1].text
@@ -35,32 +41,32 @@ def parse_xml(body):
             alth, altm, alts = root[11][1][1][0].text, root[11][1][1][1].text, root[11][1][1][2].text
             hah, ham, has = root[11][2][0].text, root[11][2][1].text, root[11][2][2].text
             '''
-    except ElementTree.ParseError as e:
-        print(e)
+        except ET.ParseError as e:
+            print(e)
  
-    rastr = f"{rah:02d}:{ram:02d}:{ras:02d}.{rass:02d}"
-    decstr = f"{decd:02d}:{decm:02d}:{decs:02d}.{decss:02d}"
-    return rastr, decstr
-
-
-class Error(Exception):
-    pass
+        self.rastr = f"{rah:02d}:{ram:02d}:{ras:02d}.{rass:02d}"
+        self.decstr = f"{decd:02d}:{decm:02d}:{decs:02d}.{decss:02d}"
+        return self.rastr, self.decstr
 
 
 class subscriber(ConnectionListener):
+    def __init__(self, ParseTCS):
+        self.ptcs = ParseTCS
+        # self.ptcs.parse_xml()
+
     def on_message(self, headers, body):
         try:
-            parse_xml(body)
+            self.ptcs.parse_xml(body)
         except ConnectionError:
             print(headers)
 
         sleep(60)  # We only need the information once per minute, so wait 60 seconds.
 
 
-default_host = ''
+default_host = 'kareem.abdul.jamal'
 tcsTelemetry = 'TCS.TCSSharedVariables.TCSHighLevelStatusSV.TCSTcsStatusSV'
 conn = stomp.Connection([(default_host, 61613)])
-conn.set_listener('tcs-subscriber', subscriber())
+conn.set_listener('tcs-subscriber', subscriber(ParseTCS()))
 conn.start()
 conn.connect()
 conn.subscribe("/topic/" + tcsTelemetry, 123)
