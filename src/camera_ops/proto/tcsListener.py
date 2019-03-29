@@ -9,7 +9,7 @@ basedir = str(Path.home()) + '/'
 
 """
 Prototype of the tcs listener
-for proto_LOFITS
+for LoFitsProto 
 """
 
 
@@ -23,6 +23,7 @@ class ParseTCS:
             # For testing, if reading from a file
             # tree = ET.parse(basedir + 'log.txt')
             # root = tree.getroot()
+
             # If reading from message broker use ET.fromstring()
             root = ET.fromstring(body)
 
@@ -41,12 +42,17 @@ class ParseTCS:
             alth, altm, alts = root[11][1][1][0].text, root[11][1][1][1].text, root[11][1][1][2].text
             hah, ham, has = root[11][2][0].text, root[11][2][1].text, root[11][2][2].text
             '''
-        except ET.ParseError as e:
+        except (ET.ParseError, IndexError) as e:
             print(e)
  
-        self.rastr = f"{rah:02d}:{ram:02d}:{ras:02d}.{rass:02d}"
-        self.decstr = f"{decd:02d}:{decm:02d}:{decs:02d}.{decss:02d}"
-        return self.rastr, self.decstr
+        try:
+            self.rastr = f"{rah:02d}:{ram:02d}:{ras:02d}.{rass:02d}"
+            self.decstr = f"{decd:02d}:{decm:02d}:{decs:02d}.{decss:02d}"
+            return self.rastr, self.decstr
+        except UnboundLocalError:
+            pass
+
+        sleep(6)
 
 
 class subscriber(ConnectionListener):
@@ -75,3 +81,5 @@ conn.disconnect()
 
 while True:
     sleep(slptm)
+
+
