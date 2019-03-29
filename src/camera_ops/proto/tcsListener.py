@@ -52,9 +52,7 @@ class ParseTCS:
         except UnboundLocalError:
             pass
 
-        sleep(6)
-
-
+        
 class subscriber(ConnectionListener):
     def __init__(self, ParseTCS):
         self.ptcs = ParseTCS
