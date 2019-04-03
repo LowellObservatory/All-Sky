@@ -4,7 +4,6 @@ from pyindilib import IndiClient
 import PyIndi
 import sys
 
-
 class FrameType():
     def __init__(self):
         pass
@@ -40,5 +39,6 @@ class FrameType():
 ft = FrameType() 
 ic = IndiClient()
 
-newswitch = sys.argv[1]
+# newswitch = sys.argv[1]
+newswitch = 'Light'
 ft.send_new_frame_type(newswitch)
