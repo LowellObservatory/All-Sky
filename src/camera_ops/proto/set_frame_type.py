@@ -1,4 +1,3 @@
-#!/home/sel/anaconda3/bin/python
 
 from pyindilib import IndiClient
 import PyIndi

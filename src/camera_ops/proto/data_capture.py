@@ -1,4 +1,3 @@
-#!/home/sel/anaconda3/bin/python
 
 import PyIndi
 import time
@@ -89,7 +88,6 @@ class IndiClient(PyIndi.BaseClient):
         # while float(sunang) <= sun_ang:
         while True:
             tstamp = datetime.utcnow().strftime('%H:%M:%S')
-            print(tstamp + ' top of while loop 92')
 
             if float(sunang) <= sun_ang:
                 print('nexp: ' + str(nexp))
@@ -97,8 +95,6 @@ class IndiClient(PyIndi.BaseClient):
                 f = open(expfile, 'r')
                 exptime = f.read()
                 f.close()
-                print('sunang, sun_ang: ' + str(sunang), str(sun_ang))
-                print('exposure time: ' + str(exptime))
        
                 self.ccd_exposure = self.device_ccd.getNumber("CCD_EXPOSURE")
 
@@ -121,7 +117,6 @@ class IndiClient(PyIndi.BaseClient):
                 i = 0
                 while i <= len(exposures) and float(sunang) < sun_ang:
                     tstamp = datetime.utcnow().strftime('%H:%M:%S')
-                    print(tstamp + ' top of while loop 124')
 
                     basedir = str(Path.home()) + '/'
                     utdate = datetime.utcnow().strftime('%Y%m%d')
@@ -148,7 +143,6 @@ class IndiClient(PyIndi.BaseClient):
                     ndelay = float(delay) - float(exptime)
 
                     for blob in ccd_ccd1:
-                        # print("name: ", blob.name, " size: ", blob.size, " format: ", blob.format)
                         fitsdata = blob.getblobdata()
 
                         try:
@@ -164,7 +158,6 @@ class IndiClient(PyIndi.BaseClient):
                             ndelay = float(delay) - float(exptime)   
                 
                         tstamp = datetime.utcnow().strftime('%H:%M:%S')
-                        print(tstamp, filename)
 
                         f = open(filename, 'wb')
                         f.write(fitsdata)
@@ -178,14 +171,10 @@ class IndiClient(PyIndi.BaseClient):
                     i += 1
                     sunang = obss.sunang()
                     tstamp = datetime.utcnow().strftime('%H:%M:%S')
-                    print(tstamp + ' 181 new sunang: ' + str(sunang))
             else:
                 tstamp = datetime.utcnow().strftime('%H:%M:%S')
-                print(tstamp + ' Waiting for sun to reach ' + str(sun_ang))
-                print('185 sunang: ' + str(sunang))
                 time.sleep(60)
                 sunang = obss.sunang()
-                print('188 sunang: ' + str(sunang))
         
 
 indiclient = IndiClient()
