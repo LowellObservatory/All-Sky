@@ -1,4 +1,3 @@
-
 import PyIndi
 import time
 import sys
@@ -13,10 +12,8 @@ from set_frame_type import FrameType
 import sys
 from asc_scheduler import ObsScheduler
 
-
 obss = ObsScheduler()
 sun_ang = -1.2
-
 
 
 class IndiClient(PyIndi.BaseClient):
@@ -37,7 +34,6 @@ class IndiClient(PyIndi.BaseClient):
 
         ccd_connect = device_ccd.getSwitch("CONNECTION")
 
-        
         while not ccd_connect:
             time.sleep(0.5)
             ccd_connect = device_ccd.getSwitch("CONNECTION")
@@ -47,7 +43,7 @@ class IndiClient(PyIndi.BaseClient):
             self.sendNewSwitch(ccd_connect)
 
         self.device_ccd = device_ccd
-        
+
     def newDevice(self, d):
         pass
 
@@ -82,20 +78,18 @@ class IndiClient(PyIndi.BaseClient):
     def serverDisconnected(self, code):
         pass
 
-       
     def capture(self, nexp, delay):
         sunang = obss.sunang()
-        # while float(sunang) <= sun_ang:
         while True:
-            tstamp = datetime.utcnow().strftime('%H:%M:%S')
-
             if float(sunang) <= sun_ang:
                 print('nexp: ' + str(nexp))
-                expfile = '/home/sel/scripts/exp.cfg'
+                expfile = basdir + "scripts/exp.cfg"
                 f = open(expfile, 'r')
                 exptime = f.read()
                 f.close()
-       
+                print('sunang, sun_ang: ' + str(sunang), str(sun_ang))
+                print('exposure time: ' + str(exptime))
+
                 self.ccd_exposure = self.device_ccd.getNumber("CCD_EXPOSURE")
 
                 while not self.ccd_exposure:
@@ -116,8 +110,6 @@ class IndiClient(PyIndi.BaseClient):
 
                 i = 0
                 while i <= len(exposures) and float(sunang) < sun_ang:
-                    tstamp = datetime.utcnow().strftime('%H:%M:%S')
-
                     basedir = str(Path.home()) + '/'
                     utdate = datetime.utcnow().strftime('%Y%m%d')
                     path = basedir + utdate
@@ -131,7 +123,7 @@ class IndiClient(PyIndi.BaseClient):
                     self.blobEvent = threading.Event()
                     self.blobEvent.clear()
 
-                    expfile = '/home/sel/scripts/exp.cfg'
+                    expfile = '{0}scripts/exp.cfg'.format(basedir)
                     f = open(expfile, 'r')
                     exptime = f.read()
                     f.close()
@@ -143,21 +135,24 @@ class IndiClient(PyIndi.BaseClient):
                     ndelay = float(delay) - float(exptime)
 
                     for blob in ccd_ccd1:
+                        # print("name: ", blob.name, " size: ", blob.size, " format: ", blob.format)
                         fitsdata = blob.getblobdata()
 
                         try:
                             lastimg = sorted(glob(path + '/' + utdate + '_*.fits'))[-1][-9:-5]
                             seq = int(lastimg) + 1
                             self.seqno = '%04d' % seq
-                            filename = path + '/' + datetime.utcnow().strftime('%Y%m%d') + '_' + str(self.seqno) + '.fits'
+                            filename = path + '/' + datetime.utcnow().strftime('%Y%m%d') + '_' \
+                                + str(self.seqno) + '.fits'
                         except IndexError:
                             lastimg = datetime.utcnow().strftime('%Y%m%d') + '_0001.fits'
                             filename = path + '/' + lastimg
 
                         if 0 < i <= len(exposures):
-                            ndelay = float(delay) - float(exptime)   
-                
+                            ndelay = float(delay) - float(exptime)
+
                         tstamp = datetime.utcnow().strftime('%H:%M:%S')
+                        print(tstamp, filename)
 
                         f = open(filename, 'wb')
                         f.write(fitsdata)
@@ -170,39 +165,40 @@ class IndiClient(PyIndi.BaseClient):
 
                     i += 1
                     sunang = obss.sunang()
-                    tstamp = datetime.utcnow().strftime('%H:%M:%S')
             else:
                 tstamp = datetime.utcnow().strftime('%H:%M:%S')
+                print(tstamp + ' Waiting for sun to reach ' + str(sun_ang))
                 time.sleep(60)
                 sunang = obss.sunang()
-        
+
 
 indiclient = IndiClient()
 indiclient.setServer("localhost", 7624)
 
 
-if __name__ == '__main__':
-    def input_params():
-        ft = FrameType()
+def input_params():
+    ft = FrameType()
 
-        # frame_type, nexp, delay = sys.argv[1], sys.argv[2], sys.argv[3]
+    # frame_type, nexp, delay = sys.argv[1], sys.argv[2], sys.argv[3]
 
-        frame_type = 'Light'
-        nexp = 820
-        delay = 61
-        ft.send_new_frame_type(frame_type)
-        indiclient.capture(nexp, delay)
+    frame_type = 'Light'
+    nexp = 820
+    delay = 61
+    ft.send_new_frame_type(frame_type)
+    indiclient.capture(nexp, delay)
 
-    def chk_redundant():
-        processid = Popen(['/bin/sh', '-c', 'pgrep -c data_capture.py'], stdout=PIPE)
-        pid = processid.communicate()[0]
 
-        if int(pid) >= 2:
-            print('data_capture is already running.')
-            print('exit now.\n')
-            sys.exit()
-        else:
-            print('Proceed to main script.')
-            input_params()
+def chk_redundant():
+    processid = Popen(['/bin/sh', '-c', 'pgrep -c data_capture.py'], stdout=PIPE)
+    pid = processid.communicate()[0]
+
+    if int(pid) >= 2:
+        print('data_capture is already running.')
+        print('exit now.\n')
+        sys.exit()
+    else:
+        print('Proceed to main script.')
+        input_params()
+
 
 chk_redundant()
