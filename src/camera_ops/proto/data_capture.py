@@ -1,3 +1,4 @@
+
 import PyIndi
 import time
 import sys
@@ -11,6 +12,8 @@ import os
 from set_frame_type import FrameType
 import sys
 from asc_scheduler import ObsScheduler
+import stomp
+import base64
 
 obss = ObsScheduler()
 sun_ang = -1.2
@@ -83,7 +86,8 @@ class IndiClient(PyIndi.BaseClient):
         while True:
             if float(sunang) <= sun_ang:
                 print('nexp: ' + str(nexp))
-                expfile = basdir + "scripts/exp.cfg"
+                basedir = str(Path.home()) + '/'
+                expfile = basedir + "scripts/exp.cfg"
                 f = open(expfile, 'r')
                 exptime = f.read()
                 f.close()
@@ -154,9 +158,12 @@ class IndiClient(PyIndi.BaseClient):
                         tstamp = datetime.utcnow().strftime('%H:%M:%S')
                         print(tstamp, filename)
 
-                        f = open(filename, 'wb')
-                        f.write(fitsdata)
-                        f.close()
+                        encoded_data = base64.b64encode(fitsdata)
+                        conn.send(body=encoded_data,
+                                  destination='/topic/test_img',
+                                  headers={'persistent': 'true'} 
+                                  )
+                        conn.disconnect()
 
                     if i + 1 == len(exposures):
                         time.sleep(float(exptime) + 1)
@@ -175,12 +182,16 @@ class IndiClient(PyIndi.BaseClient):
 indiclient = IndiClient()
 indiclient.setServer("localhost", 7624)
 
+host = '' 
+port = 61613
+conn = stomp.Connection([(host, port)])
+conn.start()
+conn.connect()
+
 
 def input_params():
     ft = FrameType()
-
     # frame_type, nexp, delay = sys.argv[1], sys.argv[2], sys.argv[3]
-
     frame_type = 'Light'
     nexp = 820
     delay = 61
