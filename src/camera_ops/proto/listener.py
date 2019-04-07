@@ -25,11 +25,9 @@ class ConnectionListener(object):
         sys.stderr.write("received an error: {}\n".format(message))
 
     def on_message(self, headers, message):
-        print('type(message): ' + str(type(message)))
         print(headers)
 
-        decoded_data = base64.b64decode(message)
-        imgdata = ImageHDU.fromstring(decoded_data)
+        imgdata = ImageHDU.fromstring(base64.b64decode(message))
         fits.writeto('testfits.fits', imgdata.data, imgdata.header, overwrite=True)
 
         statvar = False
