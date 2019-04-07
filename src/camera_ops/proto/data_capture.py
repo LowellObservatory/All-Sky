@@ -1,9 +1,7 @@
 
 import PyIndi
-import time
-import sys
+from time import sleep
 import threading
-import time
 from datetime import datetime
 from glob import glob
 from subprocess import Popen, PIPE
@@ -32,13 +30,13 @@ class IndiClient(PyIndi.BaseClient):
             print("No indiserver running on " + self.getHost() + ":" + str(self.getPort()))
 
         while not device_ccd:
-            time.sleep(0.5)
+            sleep(0.5)
             device_ccd = self.getDevice(self.ccd)
 
         ccd_connect = device_ccd.getSwitch("CONNECTION")
 
         while not ccd_connect:
-            time.sleep(0.5)
+            sleep(0.5)
             ccd_connect = device_ccd.getSwitch("CONNECTION")
         if not (device_ccd.isConnected()):
             ccd_connect[0].s = PyIndi.ISS_ON  # the "CONNECT" switch
@@ -97,7 +95,7 @@ class IndiClient(PyIndi.BaseClient):
                 self.ccd_exposure = self.device_ccd.getNumber("CCD_EXPOSURE")
 
                 while not self.ccd_exposure:
-                    time.sleep(0.5)
+                    sleep(0.5)
                     self.ccd_exposure = self.device_ccd.getNumber("CCD_EXPOSURE")
 
                 # we should inform the indi server that we want to receive the
@@ -166,16 +164,16 @@ class IndiClient(PyIndi.BaseClient):
                         conn.disconnect()
 
                     if i + 1 == len(exposures):
-                        time.sleep(float(exptime) + 1)
+                        sleep(float(exptime) + 1)
                     else:
-                        time.sleep(ndelay)
+                        sleep(ndelay)
 
                     i += 1
                     sunang = obss.sunang()
             else:
                 tstamp = datetime.utcnow().strftime('%H:%M:%S')
                 print(tstamp + ' Waiting for sun to reach ' + str(sun_ang))
-                time.sleep(60)
+                sleep(60)
                 sunang = obss.sunang()
 
 
