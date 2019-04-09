@@ -1,7 +1,9 @@
 
 import PyIndi
-from time import sleep
+import time
+import sys
 import threading
+import time
 from datetime import datetime
 from glob import glob
 from subprocess import Popen, PIPE
@@ -30,13 +32,13 @@ class IndiClient(PyIndi.BaseClient):
             print("No indiserver running on " + self.getHost() + ":" + str(self.getPort()))
 
         while not device_ccd:
-            sleep(0.5)
+            time.sleep(0.5)
             device_ccd = self.getDevice(self.ccd)
 
         ccd_connect = device_ccd.getSwitch("CONNECTION")
 
         while not ccd_connect:
-            sleep(0.5)
+            time.sleep(0.5)
             ccd_connect = device_ccd.getSwitch("CONNECTION")
         if not (device_ccd.isConnected()):
             ccd_connect[0].s = PyIndi.ISS_ON  # the "CONNECT" switch
@@ -83,23 +85,19 @@ class IndiClient(PyIndi.BaseClient):
         sunang = obss.sunang()
         while True:
             if float(sunang) <= sun_ang:
-                print('nexp: ' + str(nexp))
                 basedir = str(Path.home()) + '/'
                 expfile = basedir + "scripts/exp.cfg"
                 f = open(expfile, 'r')
                 exptime = f.read()
                 f.close()
-                print('sunang, sun_ang: ' + str(sunang), str(sun_ang))
-                print('exposure time: ' + str(exptime))
 
                 self.ccd_exposure = self.device_ccd.getNumber("CCD_EXPOSURE")
 
                 while not self.ccd_exposure:
-                    sleep(0.5)
+                    time.sleep(0.5)
                     self.ccd_exposure = self.device_ccd.getNumber("CCD_EXPOSURE")
 
-                # we should inform the indi server that we want to receive the
-                # "CCD1" blob from this device
+                # Define CCD1 as the camera in use
                 indiclient.setBLOBMode(PyIndi.B_ALSO, self.ccd, "CCD1")
                 ccd_ccd1 = self.device_ccd.getBLOB("CCD1")
 
@@ -107,7 +105,7 @@ class IndiClient(PyIndi.BaseClient):
                     time.sleep(0.5)
                     ccd_ccd1 = self.device_ccd.getBLOB("CCD1")
 
-                # a list of our exposure times
+                # Exposure times as a list
                 exposures = [exptime] * int(nexp)
 
                 i = 0
@@ -137,43 +135,28 @@ class IndiClient(PyIndi.BaseClient):
                     ndelay = float(delay) - float(exptime)
 
                     for blob in ccd_ccd1:
-                        # print("name: ", blob.name, " size: ", blob.size, " format: ", blob.format)
                         fitsdata = blob.getblobdata()
-
-                        try:
-                            lastimg = sorted(glob(path + '/' + utdate + '_*.fits'))[-1][-9:-5]
-                            seq = int(lastimg) + 1
-                            self.seqno = '%04d' % seq
-                            filename = path + '/' + datetime.utcnow().strftime('%Y%m%d') + '_' \
-                                + str(self.seqno) + '.fits'
-                        except IndexError:
-                            lastimg = datetime.utcnow().strftime('%Y%m%d') + '_0001.fits'
-                            filename = path + '/' + lastimg
 
                         if 0 < i <= len(exposures):
                             ndelay = float(delay) - float(exptime)
-
-                        tstamp = datetime.utcnow().strftime('%H:%M:%S')
-                        print(tstamp, filename)
 
                         encoded_data = base64.b64encode(fitsdata)
                         conn.send(body=encoded_data,
                                   destination='/topic/test_img',
                                   headers={'persistent': 'true'} 
                                   )
-                        conn.disconnect()
 
                     if i + 1 == len(exposures):
-                        sleep(float(exptime) + 1)
+                        time.sleep(float(exptime) + 1)
                     else:
-                        sleep(ndelay)
+                        time.sleep(ndelay)
 
                     i += 1
                     sunang = obss.sunang()
             else:
                 tstamp = datetime.utcnow().strftime('%H:%M:%S')
                 print(tstamp + ' Waiting for sun to reach ' + str(sun_ang))
-                sleep(60)
+                time.sleep(60)
                 sunang = obss.sunang()
 
 
@@ -189,7 +172,6 @@ conn.connect()
 
 def input_params():
     ft = FrameType()
-    # frame_type, nexp, delay = sys.argv[1], sys.argv[2], sys.argv[3]
     frame_type = 'Light'
     nexp = 820
     delay = 61
@@ -203,7 +185,6 @@ def chk_redundant():
 
     if int(pid) >= 2:
         print('data_capture is already running.')
-        print('exit now.\n')
         sys.exit()
     else:
         print('Proceed to main script.')

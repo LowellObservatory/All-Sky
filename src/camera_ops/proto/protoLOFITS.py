@@ -1,58 +1,56 @@
 
 from datetime import datetime
-import glob
-import sys
-from pathlib import Path
+from glob import glob
 from astropy.coordinates import EarthLocation, AltAz, get_sun, get_moon
 from astropy.time import Time
 from astropy.io import fits
+from astropy.io.fits import ImageHDU
 import warnings
 warnings.filterwarnings('ignore', category=UserWarning, append=True)
 warnings.filterwarnings('ignore', category=Warning, append=True)
 from astroplan import Observer
-
-# import xml.etree.ElementTree as et
-# import urllib.request
-# from xml.dom import minidom
-# import stomp
-# from stomp.listener import ConnectionListener
+import xml.etree.ElementTree as ET
+import urllib.request
+from xml.dom import minidom
+from pathlib import Path
+import base64
+from pyds9 import DS9
 
 """
 protoLOFITS
 The fits header builder for Lowell Allsky camera(s)
-2019/04/03
+2019/04/08
 """
 
 basedir = str(Path.home()) + '/'
-utdir = datetime.utcnow().strftime('%Y%m%d')
-dpath = basedir + utdir
-
-"""
-def environmental():
-    try:
-        url = 'http:///latestsampledata.xml'
-        usock = urllib.request.urlopen(url)
-        xmldoc = minidom.parse(usock)
-        usock.close()
-        data = xmldoc.toxml()
-        root = et.fromstring(data)
-        tempF = root[2].text
-        rh = root[20].text
-        tempC = (5.0 / 9.0) * (float(tempF) - 32)
-    except Exception as e:
-        print(e)
-        tempC = 0.0
-        rh = 0
-
-    tempC = '%02.1f' % float(tempC)
-"""
+utdate = datetime.utcnow().strftime('%Y%m%d')
+datapath = basedir + utdate
 
 
 class FitsOps:
     def __init__(self):
-        self.tempF = 52.9
-        self.rh = 38
-        self.lststr, self.moonface, self.moonalt, self.sunalt, self.seqnum = '', 0, 0, 0, 0
+        self.seqno = '0001'
+        self.tempC, self.rh = 0.0, 0
+        self.lststr, self.moonface, self.moonalt, self.sunalt, self.seqnum, self.moonillum, = '', 0, 0, 0, 0, 0
+        self.testif = 0
+
+    def environmental(self):
+        try:
+            url = 'http:///latestsampledata.xml'
+            usock = urllib.request.urlopen(url)
+            xmldoc = minidom.parse(usock)
+            usock.close()
+            data = xmldoc.toxml()
+            root = ET.fromstring(data)
+            tempf = root[2].text
+            self.rh = root[19].text
+            self.tempC = (5.0 / 9.0) * (float(tempf) - 32)
+        except Exception as e:
+            print(e)
+            self.tempC, self.rh = 0.0, 0
+
+        self.tempC = '%02.1f' % float(self.tempC)
+        return self.tempC, self.rh
 
     def sun_moon(self):
         lat, longit, elev = '34.7443', '-111.4223', 2361  
@@ -69,17 +67,29 @@ class FitsOps:
         self.lststr = '%02d' % int(lsth) + ':' + '%02d' % int(lstm) + ':' + '%02d' % int(lsts) + '.' + lstss[0:2]
 
         moonfz = dct.moon_illumination(now)
-        self.moonface = f'{moonfz * 100:04.1f}' 
+        self.moonillum = f'{moonfz * 100:04.1f}' 
         moonget = moon.transform_to(altaz).alt.deg
         self.moonalt = '{:2.4f}'.format(moonget)
         sunget = sun.transform_to(altaz).alt.deg
         self.sunalt = '{:2.4f}'.format(sunget)
+        return self.lststr, self.sunalt, self.moonalt, self.moonillum
+    
+    def fits_header(self, message):
+        try:
+            lastimg = sorted(glob(datapath + '/' + utdate + '_*.fits'))[-1][-9:-5]
+            seq = int(lastimg) + 1
+            self.seqno = '%04d' % seq
+            seqnum = self.seqno
+            datafile = datapath + '/' + datetime.utcnow().strftime('%Y%m%d') + '_' + str(self.seqno) + '.fits'
+        except IndexError:
+            lastimg = datetime.utcnow().strftime('%Y%m%d') + '_0001.fits'
+            datafile = datapath + '/' + lastimg
+            seqnum = '0001'
 
-    def fits_header(self):
-        datafile = sorted(glob.glob(dpath + '/' + utdir + '_*.fits'))[-1]
-        self.seqnum = datafile[28:32]
-        hdulist = fits.open(datafile, mode='update')
-        prihdr = hdulist[0].header
+        imgdata = ImageHDU.fromstring(base64.b64decode(message))
+        prihdr = imgdata.header
+
+        d = DS9()
 
         try:
             prihdr['DATE-OBS']
@@ -87,49 +97,47 @@ class FitsOps:
             pass
 
         try:
-            prihdr['PIXSIZE1']
-        except KeyError:
+            self.testif = prihdr['PIXSIZE1']
+
+            # Delete unwanted INDI keywords from header
+            del prihdr['TELESCOP']
+            del prihdr['OBSERVER']
+            del prihdr['OBJECT']
+            del prihdr['FRAME']
+            del prihdr['SCALE']
+            del prihdr['PIXSIZE1']
+            del prihdr['PIXSIZE2']
+            del prihdr['XBINNING']
+            del prihdr['YBINNING']
+            del prihdr['INSTRUME']
+            del prihdr['COMMENT']
+
+            # Append desired keywords to file header
+            prihdr.append(('LST-OBS ', self.sun_moon()[0], 'Local Sidereal Time of exposure start'), end=True)
+            prihdr.append(('CREATOR ', 'LOASC_INDI', 'File creator'), end=True)
+            prihdr.append(('CAMERA  ', 'SX Superstar 1.10', 'Manufacturer  driver version'), end=True)
+            prihdr.append(('MODEL   ', 25, 'Camera model number'), end=True)
+            prihdr.append(('PIXSIZE ', 4.65, 'Pixel Size in Microns'), end=True)
+            prihdr.append(('CCDSUM  ', '1 1', 'On Chip binned summation'), end=True)
+            prihdr.append(('IMGTYPE ', 'OBJECT', 'Image Type'), end=True)
+            prihdr.append(('OBJECT  ', 'Sky Above DCT', 'Object Name'), end=True)
+            prihdr.append(('OBSERVAT', 'DCT Telescope', 'Observatory'), end=True)
+            prihdr.append(('OBSLOCAT', 'Happy Jack, AZ', 'Observatory Location'), end=True)
+            prihdr.append(('OBSLAT  ', 34.89708, 'Observatory Latitude (degrees)'), end=True)
+            prihdr.append(('OBSLONG ', -111.5367, 'Observatory Longitude (degrees)'), end=True)
+            prihdr.append(('OBSALT  ', 2202., 'Observatory Altitude (meters)'), end=True)
+            prihdr.append(('INSTRUME', 'DCT_ALLSKY', 'Instrument'), end=True)
+            prihdr.append(('SEQNUM  ', int(seqnum), 'File Sequence Number'), end=True)
+            prihdr.append(('TEMPAMB ', float(self.environmental()[0]), 'Mean Ambient Temperature in deg C'), end=True)
+            prihdr.append(('HUMIDITY', int(self.environmental()[1]), 'Relative Humidity (percent)'), end=True)
+            prihdr.append(('SUN_ALT ', float(self.sun_moon()[1]), 'Altitude of Sun (degrees)'), end=True)
+            prihdr.append(('MOON_ALT', float(self.sun_moon()[2]), 'Altitude of Moon (degrees)'), end=True)
+            prihdr.append(('MOONILLU', float(self.sun_moon()[3]), 'Moon illumination (percent)'), end=True)
+
+            fits.writeto(datafile, imgdata.data, imgdata.header, overwrite=True)
+
+            d.set("file " + datafile)
+
+        except KeyError as e:
+            print('error: ' + str(e))
             print('This header has already been processed')
-            sys.exit()
-
-        # Delete unwanted INDI keywords from header
-        del prihdr['TELESCOP']
-        del prihdr['OBSERVER']
-        del prihdr['OBJECT']
-        del prihdr['FRAME']
-        del prihdr['SCALE']
-        del prihdr['PIXSIZE1']
-        del prihdr['PIXSIZE2']
-        del prihdr['XBINNING']
-        del prihdr['YBINNING']
-        del prihdr['INSTRUME']
-        del prihdr['COMMENT']
-
-        # Append desired keywords to file header
-        prihdr.append(('LST-OBS ', self.lststr, 'Local Sidereal Time of exposure start'), end=True)
-        prihdr.append(('CREATOR ', 'LOASC_INDI', 'File creator'), end=True)
-        prihdr.append(('CAMERA  ', 'SX Superstar 1.10', 'Manufacturer  driver version'), end=True)
-        prihdr.append(('MODEL   ', 25, 'Camera model number'), end=True)
-        prihdr.append(('PIXSIZE ', 4.65, 'Pixel Size in Microns'), end=True)
-        prihdr.append(('CCDSUM  ', '1 1', 'On Chip binned summation'), end=True)
-        prihdr.append(('IMGTYPE ', 'OBJECT', 'Image Type'), end=True)
-        prihdr.append(('OBSERVAT', 'DCT Telescope', 'Observatory'), end=True)
-        prihdr.append(('OBSLOCAT', 'Happy Jack, AZ', 'Observatory Location'), end=True)
-        prihdr.append(('OBSLAT  ', 34.89708, 'Observatory Latitude (degrees)'), end=True)
-        prihdr.append(('OBSLONG ', -111.5367, 'Observatory Longitude (degrees)'), end=True)
-        prihdr.append(('OBSALT  ', 2202., 'Observatory Altitude (meters)'), end=True)
-        prihdr.append(('INSTRUME', 'DCT_ALLSKY', 'Instrument'), end=True)
-        prihdr.append(('SEQNUM  ', int(self.seqnum), 'File Sequence Number'), end=True)
-        prihdr.append(('TEMPAMB ', self.tempF, 'Mean Ambient Temperature in deg F'), end=True)
-        prihdr.append(('HUMIDITY', int(self.rh), 'Relative Humidity (percent)'), end=True)
-        prihdr.append(('SUN_ALT ', float(self.sunalt), 'Altitude of Sun (degrees)'), end=True)
-        prihdr.append(('MOON_ALT', float(self.moonalt), 'Altitude of Moon (degrees)'), end=True)
-        prihdr.append(('MOONILLU', float(self.moonface), 'Moon illumination (percent)'), end=True)
-
-        hdulist.flush()
-        hdulist.close()
-
-
-fo = FitsOps()
-fo.sun_moon()
-fo.fits_header()
