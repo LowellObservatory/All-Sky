@@ -1,9 +1,7 @@
 
 import PyIndi
 import time
-import sys
 import threading
-import time
 from datetime import datetime
 from glob import glob
 from subprocess import Popen, PIPE
