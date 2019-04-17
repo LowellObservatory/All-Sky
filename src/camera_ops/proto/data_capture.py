@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 
 import PyIndi
 import time
@@ -7,15 +8,13 @@ from glob import glob
 from subprocess import Popen, PIPE
 from pathlib import Path
 import os
-from set_frame_type import FrameType
+from SkyWatch.set_frame_type import FrameType
 import sys
-from asc_scheduler import ObsScheduler
+from SkyWatch.asc_scheduler import ObsScheduler
 import stomp
 import base64
-
 obss = ObsScheduler()
 sun_ang = -1.2
-
 
 class IndiClient(PyIndi.BaseClient):
     def __init__(self):
@@ -25,6 +24,7 @@ class IndiClient(PyIndi.BaseClient):
         self.ccd_exposure = 0
         self.ccd = "SX CCD SuperStar"
         device_ccd = self.getDevice(self.ccd)
+        print('device_ccd: ' + str(device_ccd))
 
         if not self.connectServer():
             print("No indiserver running on " + self.getHost() + ":" + str(self.getPort()))
@@ -32,7 +32,7 @@ class IndiClient(PyIndi.BaseClient):
         while not device_ccd:
             time.sleep(0.5)
             device_ccd = self.getDevice(self.ccd)
-
+        device_ccd = self.getDevice(self.ccd)
         ccd_connect = device_ccd.getSwitch("CONNECTION")
 
         while not ccd_connect:
@@ -83,11 +83,14 @@ class IndiClient(PyIndi.BaseClient):
         sunang = obss.sunang()
         while True:
             if float(sunang) <= sun_ang:
+                print('nexp: ' + str(nexp))
                 basedir = str(Path.home()) + '/'
                 expfile = basedir + "scripts/exp.cfg"
                 f = open(expfile, 'r')
                 exptime = f.read()
                 f.close()
+                print('sunang, sun_ang: ' + str(sunang), str(sun_ang))
+                print('exposure time: ' + str(exptime))
 
                 self.ccd_exposure = self.device_ccd.getNumber("CCD_EXPOSURE")
 
@@ -126,7 +129,11 @@ class IndiClient(PyIndi.BaseClient):
                     exptime = f.read()
                     f.close()
 
-                    self.ccd_exposure[0].value = float(exptime)
+                    try:
+                        self.ccd_exposure[0].value = float(exptime)
+                    except ValueError:
+                        self.ccd_exposure[0].value = 0.08
+
                     self.sendNewNumber(self.ccd_exposure)
                     self.blobEvent.wait()
 
@@ -158,24 +165,21 @@ class IndiClient(PyIndi.BaseClient):
                 sunang = obss.sunang()
 
 
-indiclient = IndiClient()
-indiclient.setServer("localhost", 7624)
-
-host = '' 
-port = 61613
-conn = stomp.Connection([(host, port)])
-conn.start()
-conn.connect()
-
-
 def input_params():
+    host = '' 
+    port = 61613
+    conn = stomp.Connection([(host, port)])
+    conn.start()
+    conn.connect()
+
     ft = FrameType()
     frame_type = 'Light'
     nexp = 820
     delay = 61
+    indiclient = IndiClient()
+    server = indiclient.setServer("", 7624)
     ft.send_new_frame_type(frame_type)
     indiclient.capture(nexp, delay)
-
 
 def chk_redundant():
     processid = Popen(['/bin/sh', '-c', 'pgrep -c data_capture.py'], stdout=PIPE)
@@ -183,10 +187,10 @@ def chk_redundant():
 
     if int(pid) >= 2:
         print('data_capture is already running.')
+        print('exit now.\n')
         sys.exit()
     else:
         print('Proceed to main script.')
         input_params()
-
 
 chk_redundant()

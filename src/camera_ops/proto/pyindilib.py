@@ -7,7 +7,7 @@ from subprocess import Popen, PIPE
 class IndiClient(PyIndi.BaseClient):
     def __init__(self):
         super(IndiClient, self).__init__()
-        self.setServer("localhost", 7624)
+        self.setServer("", 7624)
 
         ispid = Popen(['/bin/sh', '-c', 'pgrep indiserver'], stdout=PIPE)
         pidis = ispid.communicate()[0].decode()
@@ -15,11 +15,11 @@ class IndiClient(PyIndi.BaseClient):
             print('The indiserver is not running. Will attempt to start now...')
             try:
                 os.mkfifo('/tmp/indififo')
-                Popen(['/bin/sh', '-c', '/usr/bin/indiserver -f /tmp/indififo indi_sx_ccd'], stdout=PIPE)
+                Popen(['/bin/sh', '-c', '/usr/bin/indiserver -f /tmp/indififo indi_sx_ccd &'], stdout=PIPE)
             except FileExistsError:
-                Popen(['/bin/sh', '-c', '/usr/bin/indiserver -f /tmp/indififo indi_sx_ccd'], stdout=PIPE)
+                Popen(['/bin/sh', '-c', '/usr/bin/indiserver -f /tmp/indififo indi_sx_ccd &'], stdout=PIPE)
             except OSError:
-                Popen(['/bin/sh', '-c', '/usr/bin/indiserver indi_sx_ccd'], stdout=PIPE)
+                Popen(['/bin/sh', '-c', '/usr/bin/indiserver indi_sx_ccd &'], stdout=PIPE)
 
         time.sleep(1)
 
