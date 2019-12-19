@@ -1,0 +1,686 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>camera &#8212; allsky 1.0.5 documentation</title>
+    <link rel="stylesheet" href="../_static/bootstrap-astropy.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/sidebar.js"></script>
+    <script type="text/javascript" src="../_static/copybutton.js"></script>
+    <link rel="shortcut icon" href="../_static/astropy_logo.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,600' rel='stylesheet' type='text/css'/>
+
+  </head><body>
+<div class="topbar">
+  <a class="brand" title="Documentation Home" href="../index.html"><span id="logotext1">all</span><span id="logotext2">sky</span><span id="logotext3">:docs</span></a>
+  <ul>
+    <!--
+    <li><a class="homelink" title="Astropy Homepage" href="http://www.astropy.org"></a></li>
+    -->
+    <li><a title="General Index" href="../genindex.html">Index</a></li>
+    <li><a title="Module Index" href="../py-modindex.html">Modules</a></li>
+    <li>
+      
+      
+<form action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+      
+    </li>
+  </ul>
+</div>
+
+<div class="related">
+    <h3>Navigation</h3>
+    <ul>
+      <li>
+	<a href="../index.html">allsky 1.0.5 documentation</a>
+	 &#187;
+      </li>
+      <li><a href="index.html" accesskey="U">Module code</a> &#187;</li>
+      
+       
+    </ul>
+</div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for camera</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">The camera module communicates with the camera and makes available</span>
+<span class="sd">the Camera class and all associated methods to external modules. </span>
+<span class="sd">The camera may be operated by use of the camera module as a </span>
+<span class="sd">standalone module.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">asc_logger</span> <span class="k">import</span> <span class="n">log_obj</span>
+<span class="kn">import</span> <span class="nn">PyIndi</span>
+<span class="kn">from</span> <span class="nn">subprocess</span> <span class="k">import</span> <span class="n">Popen</span><span class="p">,</span> <span class="n">PIPE</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="k">import</span> <span class="n">sleep</span><span class="p">,</span> <span class="n">time</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="k">import</span> <span class="n">getmtime</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="k">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+<span class="kn">import</span> <span class="nn">base64</span>
+<span class="c1"># from BrokerComm import BrokerComm  # Comment during doc build</span>
+<span class="kn">from</span> <span class="nn">glob</span> <span class="k">import</span> <span class="n">glob</span>
+<span class="kn">import</span> <span class="nn">inspect</span>
+<span class="c1"># from protoLoFits import MessageInterface  # Comment during doc bld.</span>
+<span class="kn">from</span> <span class="nn">signal</span> <span class="k">import</span> <span class="n">signal</span><span class="p">,</span> <span class="n">SIGPIPE</span><span class="p">,</span> <span class="n">SIG_DFL</span>
+<span class="n">signal</span><span class="p">(</span><span class="n">SIGPIPE</span><span class="p">,</span> <span class="n">SIG_DFL</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="IndiClient"><a class="viewcode-back" href="../camera.html#camera.IndiClient">[docs]</a><span class="k">class</span> <span class="nc">IndiClient</span><span class="p">(</span><span class="n">PyIndi</span><span class="o">.</span><span class="n">BaseClient</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The IndiClient class, as it is used here, is a </span>
+<span class="sd">    reimplementation of the BaseClient class from the </span>
+<span class="sd">    pyindi_client module.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    blobevent : obj</span>
+<span class="sd">        access the Event class from the threading module</span>
+
+<span class="sd">    seqno : str</span>
+<span class="sd">        initialize the file sequence number to 1</span>
+
+<span class="sd">    ccd_exposure : int</span>
+<span class="sd">        initialize the CCD exposure time to 0</span>
+
+<span class="sd">    basedir : str</span>
+<span class="sd">        The path default base directory</span>
+
+<span class="sd">    config_file: str</span>
+<span class="sd">        The path and filename to the json configuration file</span>
+
+<span class="sd">    logmsg : obj</span>
+<span class="sd">        The instance variable to allow use of the logging class</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">IndiClient</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">blobEvent</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">seqno</span> <span class="o">=</span> <span class="s1">&#39;0001&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ccd_exposure</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">basedir</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="o">.</span><span class="n">home</span><span class="p">())</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">basedir</span> <span class="o">+</span> <span class="s1">&#39;.allsky/config.json&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logmsg</span> <span class="o">=</span> <span class="n">log_obj</span><span class="o">.</span><span class="n">camera_logger</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">cfg_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+            <span class="n">camid</span> <span class="o">=</span> <span class="n">cfg_data</span><span class="p">[</span><span class="s1">&#39;camera&#39;</span><span class="p">][</span><span class="s1">&#39;camid&#39;</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">ccd</span> <span class="o">=</span> <span class="n">camid</span>
+        <span class="n">device_ccd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getDevice</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ccd</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">connectServer</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logmsg</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;{self.lineno()} : No indiserver running on {self.getHost()} : {self.getPort()}&#39;</span><span class="p">)</span>
+
+        <span class="k">while</span> <span class="ow">not</span> <span class="n">device_ccd</span><span class="p">:</span>
+            <span class="n">sleep</span><span class="p">(</span><span class="mf">0.25</span><span class="p">)</span>
+            <span class="n">device_ccd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getDevice</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ccd</span><span class="p">)</span>
+
+        <span class="n">ccd_connect</span> <span class="o">=</span> <span class="n">device_ccd</span><span class="o">.</span><span class="n">getSwitch</span><span class="p">(</span><span class="s2">&quot;CONNECTION&quot;</span><span class="p">)</span>
+
+        <span class="k">while</span> <span class="ow">not</span> <span class="n">ccd_connect</span><span class="p">:</span>
+            <span class="n">sleep</span><span class="p">(</span><span class="mf">0.25</span><span class="p">)</span>
+            <span class="n">ccd_connect</span> <span class="o">=</span> <span class="n">device_ccd</span><span class="o">.</span><span class="n">getSwitch</span><span class="p">(</span><span class="s2">&quot;CONNECTION&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logmsg</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;{self.lineno()} : Retrying ccd_connect.&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">device_ccd</span><span class="o">.</span><span class="n">isConnected</span><span class="p">()):</span>
+            <span class="n">ccd_connect</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">s</span> <span class="o">=</span> <span class="n">PyIndi</span><span class="o">.</span><span class="n">ISS_ON</span>  <span class="c1"># the &quot;CONNECT&quot; switch</span>
+            <span class="n">ccd_connect</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">s</span> <span class="o">=</span> <span class="n">PyIndi</span><span class="o">.</span><span class="n">ISS_OFF</span>  <span class="c1"># the &quot;DISCONNECT&quot; switch</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sendNewSwitch</span><span class="p">(</span><span class="n">ccd_connect</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">device_ccd</span> <span class="o">=</span> <span class="n">device_ccd</span>
+
+<div class="viewcode-block" id="IndiClient.lineno"><a class="viewcode-back" href="../camera.html#camera.IndiClient.lineno">[docs]</a>    <span class="k">def</span> <span class="nf">lineno</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a line number for inclusion with log entries.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        inspect.currentframe() : str</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+
+        <span class="k">return</span> <span class="n">f</span><span class="s1">&#39;{inspect.currentframe().f_back.f_lineno:03d}&#39;</span></div>
+
+<div class="viewcode-block" id="IndiClient.newDevice"><a class="viewcode-back" href="../camera.html#camera.IndiClient.newDevice">[docs]</a>    <span class="k">def</span> <span class="nf">newDevice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Method that overrides a method of the same name within</span>
+<span class="sd">        the PyIndi module.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        d : str</span>
+<span class="sd">            The specific device name</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="IndiClient.newProperty"><a class="viewcode-back" href="../camera.html#camera.IndiClient.newProperty">[docs]</a>    <span class="k">def</span> <span class="nf">newProperty</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Method that overrides a method of the same name within </span>
+<span class="sd">        the PyIndi module.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        p : str</span>
+<span class="sd">            A property name defined by PyIndi</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="IndiClient.removeProperty"><a class="viewcode-back" href="../camera.html#camera.IndiClient.removeProperty">[docs]</a>    <span class="k">def</span> <span class="nf">removeProperty</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Method that overrides a method of the same name within</span>
+<span class="sd">        the PyIndi module.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        p : str</span>
+<span class="sd">            A property name defined by PyIndi</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="IndiClient.newBLOB"><a class="viewcode-back" href="../camera.html#camera.IndiClient.newBLOB">[docs]</a>    <span class="k">def</span> <span class="nf">newBLOB</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bp</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Method that overrides a method of the same name within</span>
+<span class="sd">        the PyIndi module.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        bp : obj</span>
+<span class="sd">            An instance name of a thread defined by PyIndi</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">blobEvent</span><span class="o">.</span><span class="n">set</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="IndiClient.newSwitch"><a class="viewcode-back" href="../camera.html#camera.IndiClient.newSwitch">[docs]</a>    <span class="k">def</span> <span class="nf">newSwitch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">svp</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Method that overrides a method of the same name within</span>
+<span class="sd">        the PyIndi module.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        svp : int</span>
+<span class="sd">            One of 4 switch integer options. The integer value</span>
+<span class="sd">            varies depending on the parameter being changed.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="IndiClient.newNumber"><a class="viewcode-back" href="../camera.html#camera.IndiClient.newNumber">[docs]</a>    <span class="k">def</span> <span class="nf">newNumber</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nvp</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Method that overrides a method of the same name within</span>
+<span class="sd">        the PyIndi module.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        nvp : int</span>
+<span class="sd">            A value set to change a parameter that accepts an</span>
+<span class="sd">            integer.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="IndiClient.newText"><a class="viewcode-back" href="../camera.html#camera.IndiClient.newText">[docs]</a>    <span class="k">def</span> <span class="nf">newText</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tvp</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Method that overrides a method of the same name within</span>
+<span class="sd">        the PyIndi module.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        tvp : str</span>
+<span class="sd">            A string value used to change a quantity defined by</span>
+<span class="sd">            the PyIndi module.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="IndiClient.newLight"><a class="viewcode-back" href="../camera.html#camera.IndiClient.newLight">[docs]</a>    <span class="k">def</span> <span class="nf">newLight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lvp</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Method that overrides a method of the same name within</span>
+<span class="sd">        the PyIndi module.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        lvp : int</span>
+<span class="sd">            A value for setting an color indicator within a GUI</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="IndiClient.newMessage"><a class="viewcode-back" href="../camera.html#camera.IndiClient.newMessage">[docs]</a>    <span class="k">def</span> <span class="nf">newMessage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Method that overrides a method of the same name within</span>
+<span class="sd">        the PyIndi module.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        d : int</span>
+<span class="sd">            Sets a message type</span>
+
+<span class="sd">        m : str</span>
+<span class="sd">            Sets a message string</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="IndiClient.serverConnected"><a class="viewcode-back" href="../camera.html#camera.IndiClient.serverConnected">[docs]</a>    <span class="k">def</span> <span class="nf">serverConnected</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Method that overrides a method of the same name within</span>
+<span class="sd">        the PyIndi module. Returns the state of a camera </span>
+<span class="sd">        connection as a boolean.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="IndiClient.serverDisconnected"><a class="viewcode-back" href="../camera.html#camera.IndiClient.serverDisconnected">[docs]</a>    <span class="k">def</span> <span class="nf">serverDisconnected</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Method that overrides a method of the same name within</span>
+<span class="sd">        the PyIndi module.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        code : bool</span>
+<span class="sd">            Returns the connection state based on the input value</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">pass</span></div></div>
+
+
+<div class="viewcode-block" id="Camera"><a class="viewcode-back" href="../camera.html#camera.Camera">[docs]</a><span class="k">class</span> <span class="nc">Camera</span><span class="p">(</span><span class="n">IndiClient</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The Camera class inherits from IndiClient.BaseClient (above)</span>
+<span class="sd">    and from the MessageInterface class from the protoLoFits</span>
+<span class="sd">    module.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    mi : obj</span>
+<span class="sd">        instance of the MessageInterface class</span>
+
+<span class="sd">    blobEvent : obj</span>
+<span class="sd">         initializes to an empty object</span>
+
+<span class="sd">    basedir : str</span>
+<span class="sd">        The default base path</span>
+
+<span class="sd">    logmsg : obj</span>
+<span class="sd">        The instance logging class</span>
+
+<span class="sd">    config_file : str</span>
+<span class="sd">        The path and file name to the json configuration file</span>
+
+<span class="sd">    encoded_data : obj base64 </span>
+<span class="sd">        Format the data as a 64-bit string for transport via stomp</span>
+
+<span class="sd">    switch : list</span>
+<span class="sd">        A variable to hold the value of the switch type when a</span>
+<span class="sd">        get of the object is requested. The getSwitch method is</span>
+<span class="sd">        internal to PyIndi</span>
+
+<span class="sd">    exptime : float</span>
+<span class="sd">        The exposure time as a float when setting the exposure</span>
+
+<span class="sd">    ccd_exposure : float</span>
+<span class="sd">        A variable holding the value of an exposure time when a</span>
+<span class="sd">        request for the object is issued. The </span>
+<span class="sd">        device_ccd.getNumber() method is internal to PyIndi.</span>
+
+<span class="sd">    condition : bool</span>
+<span class="sd">        Becomes true when an exposure has completed, false during</span>
+<span class="sd">        an exposure</span>
+
+<span class="sd">    running_start : float</span>
+<span class="sd">        Time stamp represented as unix time</span>
+
+<span class="sd">    bc : obj</span>
+<span class="sd">        Instance of the BrokerComm class</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mi</span> <span class="o">=</span> <span class="n">MessageInterface</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">blobEvent</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">basedir</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="o">.</span><span class="n">home</span><span class="p">())</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logmsg</span> <span class="o">=</span> <span class="n">log_obj</span><span class="o">.</span><span class="n">camera_logger</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">basedir</span> <span class="o">+</span> <span class="s1">&#39;.allsky/config.json&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">encoded_data</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">switch</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exptime</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ccd_exposure</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">condition</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">running_start</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bc</span> <span class="o">=</span> <span class="n">BrokerComm</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="n">ispid</span> <span class="o">=</span> <span class="n">Popen</span><span class="p">([</span><span class="s1">&#39;/bin/sh&#39;</span><span class="p">,</span> <span class="s1">&#39;-c&#39;</span><span class="p">,</span> <span class="s1">&#39;pgrep indiserver&#39;</span><span class="p">],</span> <span class="n">stdout</span><span class="o">=</span><span class="n">PIPE</span><span class="p">)</span>
+        <span class="n">pidis</span> <span class="o">=</span> <span class="n">ispid</span><span class="o">.</span><span class="n">communicate</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+        <span class="n">lineno</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;{inspect.currentframe().f_back.f_lineno:03d}&#39;</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">pidis</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logmsg</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{lineno}</span><span class="s1"> : The indiserver is not running. Will attempt to start now...&#39;</span><span class="p">)</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">cfg_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+                <span class="n">dev_driver</span> <span class="o">=</span> <span class="n">cfg_data</span><span class="p">[</span><span class="s1">&#39;camera&#39;</span><span class="p">][</span><span class="s1">&#39;driver&#39;</span><span class="p">]</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">mkfifo</span><span class="p">(</span><span class="s1">&#39;/tmp/indififo&#39;</span><span class="p">)</span>
+                <span class="n">Popen</span><span class="p">([</span><span class="s1">&#39;/bin/sh&#39;</span><span class="p">,</span> <span class="s1">&#39;-c&#39;</span><span class="p">,</span> <span class="s1">&#39;/usr/bin/indiserver -f /tmp/indififo &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">dev_driver</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; &amp;&#39;</span><span class="p">],</span> <span class="n">stdout</span><span class="o">=</span><span class="n">PIPE</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logmsg</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{lineno}</span><span class="s1"> : Starting indi server&#39;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">FileExistsError</span><span class="p">:</span>
+                <span class="n">Popen</span><span class="p">([</span><span class="s1">&#39;/bin/sh&#39;</span><span class="p">,</span> <span class="s1">&#39;-c&#39;</span><span class="p">,</span> <span class="s1">&#39;/usr/bin/indiserver -f /tmp/indififo &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">dev_driver</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; &amp;&#39;</span><span class="p">],</span> <span class="n">stdout</span><span class="o">=</span><span class="n">PIPE</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logmsg</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{lineno}</span><span class="s1"> : Starting indi server&#39;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+                <span class="n">Popen</span><span class="p">([</span><span class="s1">&#39;/bin/sh&#39;</span><span class="p">,</span> <span class="s1">&#39;-c&#39;</span><span class="p">,</span> <span class="s1">&#39;/usr/bin/indiserver &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">dev_driver</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; &amp;&#39;</span><span class="p">],</span> <span class="n">stdout</span><span class="o">=</span><span class="n">PIPE</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logmsg</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{lineno}</span><span class="s1"> : Starting indi server&#39;</span><span class="p">)</span>
+
+            <span class="n">IndiClient</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">setServer</span><span class="p">(</span><span class="s2">&quot;localhost&quot;</span><span class="p">,</span> <span class="mi">7624</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logmsg</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{lineno}</span><span class="s1"> : The indiserver is running with PID {pidis.strip()}&#39;</span><span class="p">)</span>
+            <span class="n">IndiClient</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">setServer</span><span class="p">(</span><span class="s2">&quot;localhost&quot;</span><span class="p">,</span> <span class="mi">7624</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Camera.lineno"><a class="viewcode-back" href="../camera.html#camera.Camera.lineno">[docs]</a>    <span class="k">def</span> <span class="nf">lineno</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a line number with each log entry.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        inspect.currentframe() : str</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">f</span><span class="s1">&#39;{inspect.currentframe().f_back.f_lineno:03d}&#39;</span></div>
+
+<div class="viewcode-block" id="Camera.is_connected"><a class="viewcode-back" href="../camera.html#camera.Camera.is_connected">[docs]</a>    <span class="k">def</span> <span class="nf">is_connected</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        is_connected() returns the current camera connection status.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        device_ccd.isConnected() : bool</span>
+
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logmsg</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;{self.lineno()} : Camera is connected: {self.device_ccd.isConnected()}&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">device_ccd</span><span class="o">.</span><span class="n">isConnected</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logmsg</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;{self.lineno()} : There was a problem with the connection to the camera.&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Camera.connect"><a class="viewcode-back" href="../camera.html#camera.Camera.connect">[docs]</a>    <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        connect() establishes a connection to the camera.</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">device_ccd</span><span class="p">:</span>
+            <span class="n">sleep</span><span class="p">(</span><span class="mf">0.125</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">device_ccd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getDevice</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ccd</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logmsg</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;{self.lineno()} : not self.device_ccd&#39;</span><span class="p">)</span>
+
+        <span class="n">ccd_connect</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">device_ccd</span><span class="o">.</span><span class="n">getSwitch</span><span class="p">(</span><span class="s2">&quot;CONNECTION&quot;</span><span class="p">)</span>
+
+        <span class="k">while</span> <span class="ow">not</span> <span class="n">ccd_connect</span><span class="p">:</span>
+            <span class="n">sleep</span><span class="p">(</span><span class="mf">0.125</span><span class="p">)</span>
+            <span class="n">ccd_connect</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">device_ccd</span><span class="o">.</span><span class="n">getSwitch</span><span class="p">(</span><span class="s2">&quot;CONNECTION&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logmsg</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;{self.lineno()} : ccd_connect not connected.&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">device_ccd</span><span class="o">.</span><span class="n">isConnected</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logmsg</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;{self.lineno()} : not self.device_ccd.isConnected()&#39;</span><span class="p">)</span>
+            <span class="n">ccd_connect</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">s</span> <span class="o">=</span> <span class="n">PyIndi</span><span class="o">.</span><span class="n">ISS_ON</span>  <span class="c1"># the &quot;CONNECT&quot; switch</span>
+            <span class="n">ccd_connect</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">s</span> <span class="o">=</span> <span class="n">PyIndi</span><span class="o">.</span><span class="n">ISS_OFF</span>  <span class="c1"># the &quot;DISCONNECT&quot; switch</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sendNewSwitch</span><span class="p">(</span><span class="n">ccd_connect</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">device_ccd</span><span class="o">.</span><span class="n">isConnected</span><span class="p">():</span>
+            <span class="n">frame_type</span> <span class="o">=</span> <span class="s1">&#39;Light&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_frame_type</span><span class="p">(</span><span class="n">frame_type</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logmsg</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;{self.lineno()} : set_frame_type(</span><span class="si">{frame_type}</span><span class="s1">)&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Camera.disconnect"><a class="viewcode-back" href="../camera.html#camera.Camera.disconnect">[docs]</a>    <span class="k">def</span> <span class="nf">disconnect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        disconnect() removes the connection to the camera.</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">device_ccd</span><span class="p">:</span>
+            <span class="n">sleep</span><span class="p">(</span><span class="mf">0.125</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">device_ccd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getDevice</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ccd</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logmsg</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;{self.lineno()} : not self.device_ccd&#39;</span><span class="p">)</span>
+
+        <span class="n">ccd_connect</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">device_ccd</span><span class="o">.</span><span class="n">getSwitch</span><span class="p">(</span><span class="s2">&quot;CONNECTION&quot;</span><span class="p">)</span>
+
+        <span class="k">while</span> <span class="ow">not</span> <span class="n">ccd_connect</span><span class="p">:</span>
+            <span class="n">sleep</span><span class="p">(</span><span class="mf">0.125</span><span class="p">)</span>
+            <span class="n">ccd_connect</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">device_ccd</span><span class="o">.</span><span class="n">getSwitch</span><span class="p">(</span><span class="s2">&quot;CONNECTION&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logmsg</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;{self.lineno()} : Not ccd_connect&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">device_ccd</span><span class="o">.</span><span class="n">isConnected</span><span class="p">():</span>
+            <span class="n">ccd_connect</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">s</span> <span class="o">=</span> <span class="n">PyIndi</span><span class="o">.</span><span class="n">ISS_OFF</span>  <span class="c1"># the &quot;CONNECT&quot; switch</span>
+            <span class="n">ccd_connect</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">s</span> <span class="o">=</span> <span class="n">PyIndi</span><span class="o">.</span><span class="n">ISS_ON</span>   <span class="c1"># the &quot;DISCONNECT&quot; switch</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sendNewSwitch</span><span class="p">(</span><span class="n">ccd_connect</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logmsg</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;{self.lineno()} : Sent disconnect() to camera&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">is_connected</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Camera.set_frame_type"><a class="viewcode-back" href="../camera.html#camera.Camera.set_frame_type">[docs]</a>    <span class="k">def</span> <span class="nf">set_frame_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">newswitch</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the data frame type to Light, Bias, Dark or Flat. </span>
+<span class="sd">        Defaults to &quot;Light&quot;.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        newswitch : str</span>
+<span class="sd">            sets the frame type using string names known by</span>
+<span class="sd">            the PyIndi_Client</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+
+        <span class="n">ccd_frame_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">device_ccd</span><span class="o">.</span><span class="n">getProperty</span><span class="p">(</span><span class="s2">&quot;CCD_FRAME_TYPE&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">switch</span> <span class="o">=</span> <span class="n">ccd_frame_type</span><span class="o">.</span><span class="n">getSwitch</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">newswitch</span> <span class="o">==</span> <span class="s1">&#39;Light&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">switch</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">s</span> <span class="o">=</span> <span class="n">PyIndi</span><span class="o">.</span><span class="n">ISS_ON</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">switch</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">s</span> <span class="o">=</span> <span class="n">PyIndi</span><span class="o">.</span><span class="n">ISS_OFF</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">switch</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">s</span> <span class="o">=</span> <span class="n">PyIndi</span><span class="o">.</span><span class="n">ISS_OFF</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">switch</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">s</span> <span class="o">=</span> <span class="n">PyIndi</span><span class="o">.</span><span class="n">ISS_OFF</span>
+        <span class="k">elif</span> <span class="n">newswitch</span> <span class="o">==</span> <span class="s1">&#39;Bias&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">switch</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">s</span> <span class="o">=</span> <span class="n">PyIndi</span><span class="o">.</span><span class="n">ISS_OFF</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">switch</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">s</span> <span class="o">=</span> <span class="n">PyIndi</span><span class="o">.</span><span class="n">ISS_ON</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">switch</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">s</span> <span class="o">=</span> <span class="n">PyIndi</span><span class="o">.</span><span class="n">ISS_OFF</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">switch</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">s</span> <span class="o">=</span> <span class="n">PyIndi</span><span class="o">.</span><span class="n">ISS_OFF</span>
+        <span class="k">elif</span> <span class="n">newswitch</span> <span class="o">==</span> <span class="s1">&#39;Dark&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">switch</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">s</span> <span class="o">=</span> <span class="n">PyIndi</span><span class="o">.</span><span class="n">ISS_OFF</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">switch</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">s</span> <span class="o">=</span> <span class="n">PyIndi</span><span class="o">.</span><span class="n">ISS_OFF</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">switch</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">s</span> <span class="o">=</span> <span class="n">PyIndi</span><span class="o">.</span><span class="n">ISS_ON</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">switch</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">s</span> <span class="o">=</span> <span class="n">PyIndi</span><span class="o">.</span><span class="n">ISS_OFF</span>
+        <span class="k">elif</span> <span class="n">newswitch</span> <span class="o">==</span> <span class="s1">&#39;Flat&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">switch</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">s</span> <span class="o">=</span> <span class="n">PyIndi</span><span class="o">.</span><span class="n">ISS_OFF</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">switch</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">s</span> <span class="o">=</span> <span class="n">PyIndi</span><span class="o">.</span><span class="n">ISS_OFF</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">switch</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">s</span> <span class="o">=</span> <span class="n">PyIndi</span><span class="o">.</span><span class="n">ISS_OFF</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">switch</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">s</span> <span class="o">=</span> <span class="n">PyIndi</span><span class="o">.</span><span class="n">ISS_ON</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">sendNewSwitch</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">switch</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Camera.get_frame_type"><a class="viewcode-back" href="../camera.html#camera.Camera.get_frame_type">[docs]</a>    <span class="k">def</span> <span class="nf">get_frame_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the CCD frame type from the camera</span>
+
+<span class="sd">        Attributes</span>
+<span class="sd">        ----------</span>
+<span class="sd">        frame_type.getSwitch() : obj</span>
+<span class="sd">            Must be called to receive the current data frame type.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ccd_frame_type : int</span>
+<span class="sd">            The return value will either be 0 or 1. 1 represents</span>
+<span class="sd">            true.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+
+        <span class="n">ccd_frame_type</span> <span class="o">=</span> <span class="s1">&#39;Light&#39;</span>  <span class="c1"># Initialize the frame type to &quot;Light&quot;</span>
+        <span class="n">frame_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">device_ccd</span><span class="o">.</span><span class="n">getProperty</span><span class="p">(</span><span class="s2">&quot;CCD_FRAME_TYPE&quot;</span><span class="p">)</span>
+        <span class="n">switch</span> <span class="o">=</span> <span class="n">frame_type</span><span class="o">.</span><span class="n">getSwitch</span><span class="p">()</span>
+         
+        <span class="k">if</span> <span class="n">switch</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">s</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">ccd_frame_type</span> <span class="o">=</span> <span class="s1">&#39;Light&#39;</span>
+        <span class="k">elif</span> <span class="n">switch</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">s</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">ccd_frame_type</span> <span class="o">=</span> <span class="s1">&#39;Bias&#39;</span>
+        <span class="k">elif</span> <span class="n">switch</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">s</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">ccd_frame_type</span> <span class="o">=</span> <span class="s1">&#39;Dark&#39;</span>
+        <span class="k">elif</span> <span class="n">switch</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">s</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">ccd_frame_type</span> <span class="o">=</span> <span class="s1">&#39;Flat&#39;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logmsg</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;{self.lineno()} : Current frame type: </span><span class="si">{ccd_frame_type}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ccd_frame_type</span></div>
+
+<div class="viewcode-block" id="Camera.take_data"><a class="viewcode-back" href="../camera.html#camera.Camera.take_data">[docs]</a>    <span class="k">def</span> <span class="nf">take_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exptime</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Send the exposure time when requesting an exposure from</span>
+<span class="sd">        the camera.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        exptime : float</span>
+<span class="sd">            The exposure time value sent to the camera via the</span>
+<span class="sd">            PyIndi Client.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">exptime</span> <span class="o">=</span> <span class="n">exptime</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">ccd_exposure</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">device_ccd</span><span class="o">.</span><span class="n">getNumber</span><span class="p">(</span><span class="s2">&quot;CCD_EXPOSURE&quot;</span><span class="p">)</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">ccd_exposure</span><span class="p">:</span>
+            <span class="n">sleep</span><span class="p">(</span><span class="mf">0.125</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ccd_exposure</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">device_ccd</span><span class="o">.</span><span class="n">getNumber</span><span class="p">(</span><span class="s2">&quot;CCD_EXPOSURE&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logmsg</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;{self.lineno()} : not self.ccd_exposure&#39;</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ccd_exposure</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exptime</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ccd_exposure</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="mf">0.08</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logmsg</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;{self.lineno()} : Exposure Time: </span><span class="si">{self.exptime:2.4f}</span><span class="s1"> seconds.&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Define CCD1 as the camera being used</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setBLOBMode</span><span class="p">(</span><span class="n">PyIndi</span><span class="o">.</span><span class="n">B_ALSO</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ccd</span><span class="p">,</span> <span class="s2">&quot;CCD1&quot;</span><span class="p">)</span>
+        <span class="n">ccd_ccd1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">device_ccd</span><span class="o">.</span><span class="n">getBLOB</span><span class="p">(</span><span class="s2">&quot;CCD1&quot;</span><span class="p">)</span>
+
+        <span class="k">while</span> <span class="ow">not</span> <span class="n">ccd_ccd1</span><span class="p">:</span>
+            <span class="n">sleep</span><span class="p">(</span><span class="mf">0.125</span><span class="p">)</span>
+            <span class="n">ccd_ccd1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">device_ccd</span><span class="o">.</span><span class="n">getBLOB</span><span class="p">(</span><span class="s2">&quot;CCD1&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logmsg</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;{self.lineno()} : Not ccd_ccd1&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">blobEvent</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">blobEvent</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sendNewNumber</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ccd_exposure</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logmsg</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;{self.lineno()} : self.blobEvent.is_set() {self.blobEvent.is_set()}&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">blobEvent</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">blob</span> <span class="ow">in</span> <span class="n">ccd_ccd1</span><span class="p">:</span>
+            <span class="n">fitsdata</span> <span class="o">=</span> <span class="n">blob</span><span class="o">.</span><span class="n">getblobdata</span><span class="p">()</span>
+
+            <span class="k">while</span> <span class="ow">not</span> <span class="n">fitsdata</span><span class="p">:</span>
+                <span class="n">sleep</span><span class="p">(</span><span class="mf">0.125</span><span class="p">)</span>
+                <span class="n">fitsdata</span> <span class="o">=</span> <span class="n">blob</span><span class="o">.</span><span class="n">getblobdata</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logmsg</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;{self.lineno()} : Size of blob: {len(fitsdata)}&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logmsg</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;{self.lineno()} : Size of blob: {len(fitsdata)}&#39;</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">encoded_data</span> <span class="o">=</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="n">fitsdata</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logmsg</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;{self.lineno()} : Size of encoded_data: {len(self.encoded_data)}&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logmsg</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;{self.lineno()} : Name: </span><span class="si">{blob.name}</span><span class="s1">  Size: </span><span class="si">{blob.size}</span><span class="s1">  Bloblen: </span><span class="si">{blob.bloblen}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logmsg</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;{self.lineno()} : self.blobEvent.is_set() {self.blobEvent.is_set()}&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">blobEvent</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">bc</span><span class="o">.</span><span class="n">sender</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">encoded_data</span><span class="p">,</span> <span class="s1">&#39;/topic/Camera.fitsData&#39;</span><span class="p">)</span>
+                <span class="n">sleep</span><span class="p">(</span><span class="mf">0.15</span><span class="p">)</span>  <span class="c1"># Limit sleep time to no less than 0.10 sec or data files will begin drop. </span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">mi</span><span class="o">.</span><span class="n">on_data</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logmsg</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;{self.lineno()} : Exposure completed.&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">condition</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+                <span class="k">pass</span>
+
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">condition</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exptime</span> <span class="o">&lt;</span> <span class="mf">60.0</span><span class="p">:</span>
+                <span class="n">slptm</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="mf">57.0</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">exptime</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logmsg</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;{self.lineno()} : Pause time: </span><span class="si">{slptm:2.3f}</span><span class="s1"> seconds.&#39;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">exptime</span> <span class="o">==</span> <span class="mf">60.0</span><span class="p">:</span>
+                <span class="n">slptm</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logmsg</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;{self.lineno()} : Pause time: </span><span class="si">{slptm:2.3f}</span><span class="s1"> seconds.&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">slptm</span> <span class="o">=</span> <span class="mf">59.0</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">exptime</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logmsg</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;{self.lineno()} : Should not be here. Pause time: </span><span class="si">{slptm:2.3f}</span><span class="s1">&#39;</span><span class="p">)</span>
+      
+            <span class="n">sleep</span><span class="p">(</span><span class="n">slptm</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bc</span><span class="o">.</span><span class="n">sender</span><span class="p">(</span><span class="s1">&#39;True&#39;</span><span class="p">,</span>
+                           <span class="s1">&#39;/topic/AllSkyUI.telemStat&#39;</span><span class="p">,</span>
+                           <span class="p">{</span><span class="s1">&#39;origin&#39;</span><span class="p">:</span> <span class="s1">&#39;telemStat&#39;</span><span class="p">},</span>
+                           <span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">condition</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">condition</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><h3>Page Contents</h3>
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+<footer class="footer">
+  <p class="pull-right"> &nbsp;
+    <a href="#">Back to Top</a></p>
+  <p>
+    &copy; Copyright 2019, Len Bright.<br/>
+    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 2.2.1. &nbsp;
+    Last built 05 Dec 2019. <br/>
+  </p>
+</footer>
+  </body>
+</html>
